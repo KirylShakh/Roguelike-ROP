@@ -5,3 +5,7 @@ class Tile:
         if block_sight is None:
             block_sight = blocked
         self.block_sight = block_sight
+
+    def unblock(self):
+        self.blocked = False
+        self.block_sight = False
