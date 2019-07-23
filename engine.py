@@ -4,8 +4,9 @@ import tcod.event
 import event_handler
 from renderer_object import Renderer
 from map_objects.game_map import GameMap
-from entity import Entity
+from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
+from game_states import GameStates
 
 def main():
     game_name = 'tcod tutorial revised'
@@ -17,6 +18,7 @@ def main():
     room_max_size = 10
     room_min_size = 6
     max_rooms = 30
+    max_monsters_per_room = 3
 
     fov_algorithm = 0
     fov_light_walls = True
@@ -34,16 +36,16 @@ def main():
     con = tcod.console.Console(screen_width, screen_height)
     renderer = Renderer(root, con)
 
-    player = Entity(int(screen_width / 2), int(screen_height / 2), tcod.event.K_AT, tcod.white)
+    player = Entity(0, 0, '@', tcod.white, 'Me', True)
+    entities = [player]
 
     game_map = GameMap(map_width, map_height)
-    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player)
+    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room)
 
     fov_recompute = True
     fov_map = initialize_fov(game_map)
 
-    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), tcod.event.K_AT, tcod.yellow)
-    entities = [player, npc]
+    game_state = GameStates.PLAYERS_TURN
 
     while True:
         recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
@@ -61,14 +63,31 @@ def main():
                 raise SystemExit()
 
             move = action.get('move')
-            if move:
+            if move and game_state == GameStates.PLAYERS_TURN:
                 dx, dy = move
+                destination_x = player.x + dx
+                destination_y = player.y + dy
+
                 if not game_map.is_blocked(player.x + dx, player.y + dy):
-                    player.move(dx, dy)
-                    fov_recompute = True
+                    target = get_blocking_entities_at_location(entities, destination_x, destination_y)
+
+                    if target:
+                        print('You kick the ' + target.name + ' in the shins, much to its annoyance!')
+                    else:
+                        player.move(dx, dy)
+                        fov_recompute = True
+
+                    game_state = GameStates.ENEMY_TURN
 
             if action.get('fullscreen'):
                 tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
+
+            if game_state == GameStates.ENEMY_TURN:
+                for entity in entities:
+                    if entity != player:
+                        print('The ' + entity.name + ' ponders the meaning of its existence.')
+
+                game_state = GameStates.PLAYERS_TURN
 
 
 if __name__ == '__main__':

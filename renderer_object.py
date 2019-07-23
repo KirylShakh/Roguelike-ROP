@@ -35,7 +35,7 @@ class Renderer:
     def draw_entity(self, entity, fov_map):
         if tcod.map_is_in_fov(fov_map, entity.x, entity.y):
             self.con.default_fg = entity.color
-            self.con.put_char(entity.x, entity.y, entity.char, tcod.BKGND_NONE)
+            tcod.console_put_char(self.con, entity.x, entity.y, entity.char, tcod.BKGND_NONE)
 
     def clear_entity(self, entity):
-        self.con.put_char(entity.x, entity.y, tcod.event.K_SPACE, tcod.BKGND_NONE)
+        tcod.console_put_char(self.con, entity.x, entity.y, ' ', tcod.BKGND_NONE)
