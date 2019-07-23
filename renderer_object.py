@@ -33,7 +33,7 @@ class Renderer:
         if fov_recompute:
             for y in range(game_map.height):
                 for x in range(game_map.width):
-                    visible = tcod.map_is_in_fov(fov_map, x, y)
+                    visible = fov_map.fov[x][y]
                     wall = game_map.tiles[x][y].block_sight
 
                     if visible:
@@ -77,7 +77,7 @@ class Renderer:
             self.clear_entity(entity)
 
     def draw_entity(self, entity, fov_map):
-        if tcod.map_is_in_fov(fov_map, entity.x, entity.y):
+        if fov_map.fov[entity.x][entity.y]:
             self.con.default_fg = entity.color
             tcod.console_put_char(self.con, entity.x, entity.y, entity.char, tcod.BKGND_NONE)
 

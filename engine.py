@@ -107,7 +107,7 @@ def main():
             if mouseover_tile:
                 (x, y) = (mouseover_tile.x, mouseover_tile.y)
                 entities_under_mouse = [entity.name for entity in entities
-                            if entity.x == x and entity.y == y and tcod.map_is_in_fov(fov_map, entity.x, entity.y)]
+                            if entity.x == x and entity.y == y and fov_map.fov[entity.x][entity.y]]
                 entities_under_mouse = ', '.join(entities_under_mouse).capitalize()
 
             for player_turn_result in player_turn_results:
