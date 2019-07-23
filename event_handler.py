@@ -4,6 +4,8 @@ import tcod.event
 def handle(event):
     if event.type == 'QUIT':
         return {'exit': True}
+    elif event.type == 'MOUSEMOTION':
+        return {'mouseover': event.tile}
     elif event.type == 'KEYDOWN':
         if event.sym == tcod.event.K_ESCAPE:
             return {'exit': True}
@@ -28,3 +30,10 @@ def handle(event):
         if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
             return {'fullscreen': True}
     return {}
+
+def get_names_under_mouse(mouse, entities, fov_map):
+    (x, y) = (mouse.tile.x, mouse.tile.y)
+    names = [entity.name for entity in entities
+                if entity.x == x and entity.y == y and tcod.map_is_in_fov(fov_map, entity.x, entity.y)]
+    names = ', '.join(names)
+    return names.capitalize()

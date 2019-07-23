@@ -9,13 +9,22 @@ from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
 from components.fighter import Fighter
 from death_functions import kill_monster, kill_player
+from game_messages import MessageLog
 
 def main():
     game_name = 'tcod tutorial revised'
     screen_width = 80
     screen_height = 50
     map_width = 80
-    map_height = 45
+    map_height = 43
+
+    bar_width = 20
+    panel_height = 7
+    panel_y = screen_height - panel_height
+
+    message_x = bar_width + 2
+    message_width = screen_width - bar_width - 2
+    message_height = panel_height - 1
 
     room_max_size = 10
     room_min_size = 6
@@ -36,7 +45,12 @@ def main():
     tcod.console_set_custom_font('arial10x10.png', tcod.FONT_TYPE_GREYSCALE | tcod.FONT_LAYOUT_TCOD)
     root = tcod.console_init_root(screen_width, screen_height, game_name, False, tcod.RENDERER_SDL2, 'F', True)
     con = tcod.console.Console(screen_width, screen_height)
-    renderer = Renderer(root, con, screen_height)
+    renderer = Renderer(root, con, screen_width, screen_height)
+
+    panel = tcod.console.Console(screen_width, panel_height)
+
+    message_log = MessageLog(message_x, message_width, message_height)
+    entities_under_mouse = ''
 
     fighter_component = Fighter(hp=30, defense=2, power=5)
     player = Entity(0, 0, '@', tcod.white, 'Me', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
@@ -53,7 +67,8 @@ def main():
     while True:
         recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
-        renderer.render_all(entities, player, game_map, colors, fov_map, fov_recompute)
+        renderer.render_all(entities, player, game_map, colors, fov_map, fov_recompute,
+                            panel, bar_width, panel_height, panel_y, message_log, entities_under_mouse)
         fov_recompute = False
 
         tcod.console_flush()
@@ -88,12 +103,19 @@ def main():
             if action.get('fullscreen'):
                 tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
 
+            mouseover_tile = action.get('mouseover')
+            if mouseover_tile:
+                (x, y) = (mouseover_tile.x, mouseover_tile.y)
+                entities_under_mouse = [entity.name for entity in entities
+                            if entity.x == x and entity.y == y and tcod.map_is_in_fov(fov_map, entity.x, entity.y)]
+                entities_under_mouse = ', '.join(entities_under_mouse).capitalize()
+
             for player_turn_result in player_turn_results:
                 message = player_turn_result.get('message')
                 dead_entity = player_turn_result.get('dead')
 
                 if message:
-                    print(message)
+                    message_log.add_message(message)
 
                 if dead_entity:
                     if dead_entity == player:
@@ -101,7 +123,7 @@ def main():
                     else:
                         message = kill_monster(dead_entity)
 
-                    print(message)
+                    message_log.add_message(message)
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities:
@@ -113,7 +135,7 @@ def main():
                             dead_entity = enemy_turn_result.get('dead')
 
                             if message:
-                                print(message)
+                                message_log.add_message(message)
 
                             if dead_entity:
                                 if dead_entity == player:
@@ -121,7 +143,7 @@ def main():
                                 else:
                                     message = kill_monster(dead_entity)
 
-                                print(message)
+                                message_log.add_message(message)
 
                                 if game_state == GameStates.PLAYER_DEAD:
                                     break
