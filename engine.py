@@ -8,8 +8,9 @@ from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
 from components.fighter import Fighter
+from components.inventory import Inventory
 from death_functions import kill_monster, kill_player
-from game_messages import MessageLog
+from game_messages import MessageLog, Message
 
 def main():
     game_name = 'tcod tutorial revised'
@@ -30,6 +31,7 @@ def main():
     room_min_size = 6
     max_rooms = 30
     max_monsters_per_room = 3
+    max_items_per_room = 2
 
     fov_algorithm = 0
     fov_light_walls = True
@@ -53,22 +55,27 @@ def main():
     entities_under_mouse = ''
 
     fighter_component = Fighter(hp=30, defense=2, power=5)
-    player = Entity(0, 0, '@', tcod.white, 'Me', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
+    inventory_component = Inventory(26)
+    player = Entity(0, 0, '@', tcod.white, 'Me', blocks=True, render_order=RenderOrder.ACTOR,
+                    fighter=fighter_component, inventory=inventory_component)
     entities = [player]
 
     game_map = GameMap(map_width, map_height)
-    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room)
+    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height,
+                        player, entities, max_monsters_per_room, max_items_per_room)
 
     fov_recompute = True
     fov_map = initialize_fov(game_map)
 
     game_state = GameStates.PLAYERS_TURN
+    previous_game_state = game_state
 
     while True:
         recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
         renderer.render_all(entities, player, game_map, colors, fov_map, fov_recompute,
-                            panel, bar_width, panel_height, panel_y, message_log, entities_under_mouse)
+                            panel, bar_width, panel_height, panel_y, message_log,
+                            entities_under_mouse, game_state)
         fov_recompute = False
 
         tcod.console_flush()
@@ -76,9 +83,12 @@ def main():
         renderer.clear_all(entities)
 
         for event in tcod.event.wait():
-            action = event_handler.handle(event)
+            action = event_handler.handle(event, game_state)
             if action.get('exit'):
-                raise SystemExit()
+                if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+                    game_state = previous_game_state
+                else:
+                    raise SystemExit()
 
             player_turn_results = []
 
@@ -100,6 +110,35 @@ def main():
 
                     game_state = GameStates.ENEMY_TURN
 
+            pickup = action.get('pickup')
+            if pickup and game_state == GameStates.PLAYERS_TURN:
+                for entity in entities:
+                    if entity.item and entity.x == player.x and entity.y == player.y:
+                        pickup_results = player.inventory.add_item(entity)
+                        player_turn_results.extend(pickup_results)
+                        break
+                else:
+                    message_log.add_message(Message('There is nothing to pick up here', tcod.yellow))
+
+            if action.get('show_inventory'):
+                previous_game_state = game_state
+                game_state = GameStates.SHOW_INVENTORY
+
+            inventory_index = action.get('inventory_index')
+            if (inventory_index is not None
+                        and previous_game_state != GameStates.PLAYER_DEAD
+                        and inventory_index < len(player.inventory.items)):
+                item = player.inventory.items[inventory_index]
+
+                if game_state == GameStates.SHOW_INVENTORY:
+                    player_turn_results.extend(player.inventory.use(item))
+                elif game_state == GameStates.DROP_INVENTORY:
+                    player_turn_results.extend(player.inventory.drop_item(item))
+
+            if action.get('drop_inventory'):
+                previous_game_state = game_state
+                game_state = GameStates.DROP_INVENTORY
+
             if action.get('fullscreen'):
                 tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
 
@@ -112,11 +151,10 @@ def main():
 
             for player_turn_result in player_turn_results:
                 message = player_turn_result.get('message')
-                dead_entity = player_turn_result.get('dead')
-
                 if message:
                     message_log.add_message(message)
 
+                dead_entity = player_turn_result.get('dead')
                 if dead_entity:
                     if dead_entity == player:
                         message, game_state = kill_player(player)
@@ -124,6 +162,20 @@ def main():
                         message = kill_monster(dead_entity)
 
                     message_log.add_message(message)
+
+                item_added = player_turn_result.get('item_added')
+                if item_added:
+                    entities.remove(item_added)
+                    game_state = GameStates.ENEMY_TURN
+
+                item_consumed = player_turn_result.get('item_consumed')
+                if item_consumed:
+                    game_state = GameStates.ENEMY_TURN
+
+                item_dropped = player_turn_result.get('item_dropped')
+                if item_dropped:
+                    entities.append(item_dropped)
+                    game_state = GameStates.ENEMY_TURN
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities:

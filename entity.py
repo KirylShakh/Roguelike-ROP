@@ -4,7 +4,8 @@ import tcod
 from renderer_object import RenderOrder
 
 class Entity:
-    def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None):
+    def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE,
+                fighter=None, ai=None, item=None, inventory=None):
         self.x = x
         self.y = y
         self.char = char
@@ -12,13 +13,20 @@ class Entity:
         self.name = name
         self.blocks = blocks
         self.render_order = render_order
+
         self.fighter = fighter
         self.ai = ai
+        self.item = item
+        self.inventory = inventory
 
         if self.fighter:
             self.fighter.own(self)
         if self.ai:
             self.ai.own(self)
+        if self.item:
+            self.item.own(self)
+        if self.inventory:
+            self.inventory.own(self)
 
     def move(self, dx, dy):
         self.x += dx
