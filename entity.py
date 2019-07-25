@@ -45,8 +45,11 @@ class Entity:
             self.move(dx, dy)
 
     def distance_to(self, other):
-        dx = other.x - self.x
-        dy = other.y - self.y
+        return self.distance(other.x, other.y)
+
+    def distance(self, x, y):
+        dx = x - self.x
+        dy = y - self.y
         return math.sqrt(dx ** 2 + dy ** 2)
 
     def move_astar(self, target, entities, game_map):

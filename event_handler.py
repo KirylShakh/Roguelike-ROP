@@ -8,6 +8,11 @@ def handle(event, game_state):
         return {'exit': True}
     elif event.type == 'MOUSEMOTION':
         return {'mouseover': event.tile}
+    elif event.type == 'MOUSEBUTTONUP':
+        if event.button == tcod.event.BUTTON_LEFT:
+            return {'left_click': (event.tile.x, event.tile.y)}
+        elif event.button == tcod.event.BUTTON_RIGHT:
+            return {'right_click': (event.tile.x, event.tile.y)}
 
     if game_state == GameStates.PLAYERS_TURN:
         return handle_player_turn(event)
@@ -15,6 +20,8 @@ def handle(event, game_state):
         return handle_player_dead(event)
     elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_show_inventory(event)
+    elif game_state == GameStates.TARGETING:
+        return handle_targeting(event)
 
     return {}
 
@@ -77,4 +84,7 @@ def handle_show_inventory(event):
         if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
             return {'fullscreen': True}
 
+    return {}
+
+def handle_targeting(event):
     return {}
