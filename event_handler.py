@@ -88,3 +88,13 @@ def handle_show_inventory(event):
 
 def handle_targeting(event):
     return {}
+
+def handle_main_menu(event):
+    if event.type == 'KEYDOWN':
+        if event.sym == tcod.event.K_a:
+            return {'new_game': True}
+        elif event.sym == tcod.event.K_b:
+            return {'load_saved_game': True}
+        elif event.sym == tcod.event.K_c or event.sym == tcod.event.K_ESCAPE:
+            return {'exit_game': True}
+    return {}

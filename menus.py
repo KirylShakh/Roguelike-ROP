@@ -37,3 +37,17 @@ def inventory_menu(con, header, inventory, inventory_width, screen_width, screen
         options = [item.name for item in inventory.items]
 
     menu(con, header, options, inventory_width, screen_width, screen_height, root)
+
+def main_menu(con, background_image, screen_width, screen_height, root):
+    tcod.image_blit_2x(background_image, 0, 0, 0)
+
+    root.default_fg = tcod.light_yellow
+    tcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 2) - 4, tcod.BKGND_NONE, tcod.CENTER,
+                'Tombs Of The Ancient Kings')
+    tcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 2) - 2, tcod.BKGND_NONE, tcod.CENTER,
+                'By Me')
+
+    menu(con, '', ['Play a new game', 'Continue last game', 'Quit'], 24, screen_width, screen_height, root)
+
+def message_box(con, header, width, screen_width, screen_height, root):
+    menu(con, header, [], width, screen_height, screen_height, root)
