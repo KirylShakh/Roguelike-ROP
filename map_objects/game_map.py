@@ -4,7 +4,7 @@ import tcod
 
 from game_vars import room_vars
 from random_utils import random_choice_from_dict, from_dungeon_level
-from renderer_object import RenderOrder
+from render_objects.render_order import RenderOrder
 from map_objects.tile import Tile
 from map_objects.rectangle import Rect
 from entity import Entity
@@ -16,6 +16,7 @@ from components.equippable import Equippable
 from components.equipment import EquipmentSlots
 from item_functions import heal, cast_lightning, cast_fireball, cast_confuse
 from game_messages import Message
+
 
 class GameMap:
     def __init__(self, width, height, dungeon_level=1):

@@ -10,7 +10,8 @@ from entity import Entity
 from game_messages import MessageLog
 from game_states import GameStates
 from map_objects.game_map import GameMap
-from renderer_object import RenderOrder
+from render_objects.render_order import RenderOrder
+
 
 def get_game_variables():
     fighter_component = Fighter(hp=100, defense=1, power=2)

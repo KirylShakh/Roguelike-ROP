@@ -2,7 +2,7 @@ import math
 import tcod
 
 from components.item import Item
-from renderer_object import RenderOrder
+from render_objects.render_order import RenderOrder
 
 class Entity:
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE,
