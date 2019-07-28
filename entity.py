@@ -1,11 +1,13 @@
 import math
 import tcod
 
+from components.item import Item
 from renderer_object import RenderOrder
 
 class Entity:
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE,
-                fighter=None, ai=None, item=None, inventory=None, stairs=None, level=None):
+                fighter=None, ai=None, item=None, inventory=None, stairs=None, level=None,
+                equippable=None, equipment=None):
         self.x = x
         self.y = y
         self.char = char
@@ -20,10 +22,18 @@ class Entity:
         self.inventory = inventory
         self.stairs = stairs
         self.level = level
+        self.equippable = equippable
+        self.equipment = equipment
 
-        for component in [self.fighter, self.ai, self.item, self.inventory, self.stairs, self.level]:
+        for component in [self.fighter, self.ai, self.item, self.inventory, self.stairs, self.level,
+                            self.equippable, self.equipment]:
             if component:
                 component.own(self)
+
+        if self.equippable and not self.item:
+            item = Item()
+            self.item = item
+            self.item.own(self)
 
     def move(self, dx, dy):
         self.x += dx

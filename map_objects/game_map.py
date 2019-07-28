@@ -11,6 +11,8 @@ from components.fighter import Fighter
 from components.ai import BasicMonster
 from components.item import Item
 from components.stairs import Stairs
+from components.equippable import Equippable
+from components.equipment import EquipmentSlots
 from item_functions import heal, cast_lightning, cast_fireball, cast_confuse
 from game_messages import Message
 
@@ -104,6 +106,8 @@ class GameMap:
         }
         item_chances = {
             'healing_potion': 35,
+            'sword': from_dungeon_level([[5, 4]], self.dungeon_level),
+            'shield': from_dungeon_level([[15, 8]], self.dungeon_level),
             'lightning_scroll': from_dungeon_level([[25, 4]], self.dungeon_level),
             'fireball_scroll': from_dungeon_level([[25, 6]], self.dungeon_level),
             'confuse_scroll': from_dungeon_level([[10, 2]], self.dungeon_level),
@@ -139,6 +143,12 @@ class GameMap:
                     item_component = Item(use_function=heal, amount=40)
                     item = Entity(x, y, '!', tcod.violet, 'Healing potion', render_order=RenderOrder.ITEM,
                             item=item_component)
+                elif item_choice == 'sword':
+                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=3)
+                    item = Entity(x, y, '/', tcod.sky, 'Sword', equippable=equippable_component)
+                elif item_choice == 'shield':
+                    equippable_component = Equippable(EquipmentSlots.OFF_HAND, defense_bonus=1)
+                    item = Entity(x, y, '[', tcod.darker_orange, 'Shield', equippable=equippable_component)
                 elif item_choice == 'fireball_scroll':
                     item_component = Item(use_function=cast_fireball, targeting=True, damage=25, radius=3,
                                 targeting_message=Message('Left-click a target tile for the fireball or right-click to cancel', tcod.light_cyan))

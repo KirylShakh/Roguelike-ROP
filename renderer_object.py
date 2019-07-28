@@ -85,7 +85,7 @@ class Renderer:
                 inventory_title = 'Press the key next to an item to drop it, or Esc to cancel\n'
 
             inventory_menu(self.con, inventory_title,
-                            player.inventory, 50, self.screen_width, self.screen_height, self.root)
+                            player, 50, self.screen_width, self.screen_height, self.root)
         elif game_state == GameStates.LEVEL_UP:
             level_up_menu(self.con, 'Level up. Choose a stat to raise:', player, 40, self.screen_width,
                             self.screen_height, self.root)
