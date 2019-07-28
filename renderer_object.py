@@ -1,13 +1,14 @@
 import tcod
-from enum import Enum
+from enum import Enum, auto
 
 from game_states import GameStates
-from menus import inventory_menu
+from menus import inventory_menu, level_up_menu, character_screen
 
 class RenderOrder(Enum):
-    CORPSE = 1
-    ITEM = 2
-    ACTOR = 3
+    STAIRS = auto()
+    CORPSE = auto()
+    ITEM = auto()
+    ACTOR = auto()
 
 def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)
@@ -53,7 +54,7 @@ class Renderer:
 
         entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
         for entity in entities_in_render_order:
-            self.draw_entity(entity, fov_map)
+            self.draw_entity(entity, fov_map, game_map)
 
         self.con.blit(self.root)
 
@@ -69,6 +70,8 @@ class Renderer:
 
         render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                     tcod.light_red, tcod.darker_red)
+        tcod.console_print_ex(panel, 1, 3, tcod.BKGND_NONE, tcod.LEFT,
+                                'Dungeon level: {0}'.format(game_map.dungeon_level))
 
         panel.default_fg = tcod.light_gray
         tcod.console_print_ex(panel, 1, 0, tcod.BKGND_NONE, tcod.LEFT, entities_under_mouse)
@@ -83,13 +86,18 @@ class Renderer:
 
             inventory_menu(self.con, inventory_title,
                             player.inventory, 50, self.screen_width, self.screen_height, self.root)
+        elif game_state == GameStates.LEVEL_UP:
+            level_up_menu(self.con, 'Level up. Choose a stat to raise:', player, 40, self.screen_width,
+                            self.screen_height, self.root)
+        elif game_state == GameStates.CHARACTER_SCREEN:
+            character_screen(player, 30, 10, self.screen_width, self.screen_height, self.root)
 
     def clear_all(self, entities):
         for entity in entities:
             self.clear_entity(entity)
 
-    def draw_entity(self, entity, fov_map):
-        if fov_map.fov[entity.x][entity.y]:
+    def draw_entity(self, entity, fov_map, game_map):
+        if fov_map.fov[entity.x][entity.y] or (entity.stairs and game_map.tiles[entity.x][entity.y].explored):
             self.con.default_fg = entity.color
             tcod.console_put_char(self.con, entity.x, entity.y, entity.char, tcod.BKGND_NONE)
 

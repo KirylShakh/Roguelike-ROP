@@ -5,7 +5,7 @@ from renderer_object import RenderOrder
 
 class Entity:
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE,
-                fighter=None, ai=None, item=None, inventory=None):
+                fighter=None, ai=None, item=None, inventory=None, stairs=None, level=None):
         self.x = x
         self.y = y
         self.char = char
@@ -18,15 +18,12 @@ class Entity:
         self.ai = ai
         self.item = item
         self.inventory = inventory
+        self.stairs = stairs
+        self.level = level
 
-        if self.fighter:
-            self.fighter.own(self)
-        if self.ai:
-            self.ai.own(self)
-        if self.item:
-            self.item.own(self)
-        if self.inventory:
-            self.inventory.own(self)
+        for component in [self.fighter, self.ai, self.item, self.inventory, self.stairs, self.level]:
+            if component:
+                component.own(self)
 
     def move(self, dx, dy):
         self.x += dx

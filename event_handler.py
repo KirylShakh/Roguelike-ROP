@@ -22,6 +22,10 @@ def handle(event, game_state):
         return handle_show_inventory(event)
     elif game_state == GameStates.TARGETING:
         return handle_targeting(event)
+    elif game_state == GameStates.LEVEL_UP:
+        return handle_level_up_menu(event)
+    elif game_state == GameStates.CHARACTER_SCREEN:
+        return handle_character_screen(event)
 
     return {}
 
@@ -46,6 +50,8 @@ def handle_player_turn(event):
             return {'move': (-1, 1)}
         elif event.sym == tcod.event.K_n:
             return {'move': (1, 1)}
+        elif event.sym == tcod.event.K_z:
+            return {'wait': True}
 
         if event.sym == tcod.event.K_g:
             return {'pickup': True}
@@ -53,6 +59,11 @@ def handle_player_turn(event):
             return {'show_inventory': True}
         elif event.sym == tcod.event.K_d:
             return {'drop_inventory': True}
+        elif event.sym == tcod.event.K_c:
+            return {'show_character_screen': True}
+
+        if event.sym == tcod.event.K_PERIOD and (tcod.event.KMOD_LSHIFT or tcod.event.KMOD_RSHIFT):
+            return {'take_stairs_down': True}
 
         if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
             return {'fullscreen': True}
@@ -97,4 +108,20 @@ def handle_main_menu(event):
             return {'load_saved_game': True}
         elif event.sym == tcod.event.K_c or event.sym == tcod.event.K_ESCAPE:
             return {'exit_game': True}
+    return {}
+
+def handle_level_up_menu(event):
+    if event.type == 'KEYDOWN':
+        if event.sym == tcod.event.K_a:
+            return {'level_up': 'hp'}
+        elif event.sym == tcod.event.K_b:
+            return {'level_up': 'str'}
+        elif event.sym == tcod.event.K_c:
+            return {'level_up': 'def'}
+    return {}
+
+def handle_character_screen(event):
+    if event.type == 'KEYDOWN':
+        if event.sym == tcod.event.K_ESCAPE:
+            return {'exit': True}
     return {}

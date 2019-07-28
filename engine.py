@@ -96,7 +96,7 @@ def play_game(player, entities, game_map, message_log, game_state, root, con, pa
         for event in tcod.event.wait():
             action = event_handler.handle(event, game_state)
             if action.get('exit'):
-                if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+                if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN):
                     game_state = previous_game_state
                 elif game_state == GameStates.TARGETING:
                     player_turn_results.append({'targeting_cancelled': True})
@@ -105,6 +105,9 @@ def play_game(player, entities, game_map, message_log, game_state, root, con, pa
                     return True
 
             player_turn_results = []
+
+            if action.get('wait'):
+                game_state = GameStates.ENEMY_TURN
 
             move = action.get('move')
             if move and game_state == GameStates.PLAYERS_TURN:
@@ -153,6 +156,10 @@ def play_game(player, entities, game_map, message_log, game_state, root, con, pa
                 previous_game_state = game_state
                 game_state = GameStates.DROP_INVENTORY
 
+            if action.get('show_character_screen'):
+                previous_game_state = game_state
+                game_state = GameStates.CHARACTER_SCREEN
+
             left_click = action.get('left_click')
             right_click = action.get('right_click')
             if game_state == GameStates.TARGETING:
@@ -163,6 +170,29 @@ def play_game(player, entities, game_map, message_log, game_state, root, con, pa
                     player_turn_results.extend(item_use_results)
                 elif right_click:
                     player_turn_results.append({'targetting_cancelled': True})
+
+            if action.get('take_stairs_down') and game_state == GameStates.PLAYERS_TURN:
+                for entity in entities:
+                    if entity.stairs and entity.x == player.x and entity.y == player.y:
+                        entities = game_map.next_floor(player, message_log, constants)
+                        fov_map = initialize_fov(game_map)
+                        fov_recompute = True
+                        con.clear()
+                        break
+                else:
+                    message_log.add_message(Message('There are no stairs here', tcod.yellow))
+
+            level_up = action.get('level_up')
+            if level_up:
+                if level_up == 'hp':
+                    player.fighter.max_hp += 20
+                    player.fighter.heal(20)
+                elif level_up == 'str':
+                    player.fighter.power += 1
+                elif level_up == 'def':
+                    player.fighter.defense += 1
+
+                game_state = previous_game_state
 
             if action.get('fullscreen'):
                 tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
@@ -215,6 +245,19 @@ def play_game(player, entities, game_map, message_log, game_state, root, con, pa
                     targeting_item = targeting
 
                     message_log.add_message(targeting_item.item.targeting_message)
+
+                xp = player_turn_result.get('xp')
+                if xp:
+                    leveled_up = player.level.add_xp(xp)
+                    message_log.add_message(Message('You gain {0} experience points'.format(xp)))
+
+                    if leveled_up:
+                        message_log.add_message(
+                            Message('Your battle skills grow stronger. You reached level {0}'.format(player.level.current_level),
+                            tcod.yellow)
+                        )
+                        previous_game_state = game_state
+                        game_state = GameStates.LEVEL_UP
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities:
