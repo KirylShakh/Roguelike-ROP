@@ -1,6 +1,7 @@
 import tcod
 from enum import Enum, auto
 
+from game_vars import color_vars
 from game_states import GameStates
 from menus import inventory_menu, level_up_menu, character_screen
 
@@ -31,7 +32,7 @@ class Renderer:
         self.screen_width = screen_width
         self.screen_height = screen_height
 
-    def render_all(self, entities, player, game_map, colors, fov_map, fov_recompute,
+    def render_all(self, entities, player, game_map, fov_map, fov_recompute,
                     panel, bar_width, panel_height, panel_y, message_log,
                     entities_under_mouse, game_state):
         if fov_recompute:
@@ -42,15 +43,15 @@ class Renderer:
 
                     if visible:
                         if wall:
-                            tcod.console_set_char_background(self.con, x, y, colors.get('light_wall'), tcod.BKGND_SET)
+                            tcod.console_set_char_background(self.con, x, y, color_vars.light_wall, tcod.BKGND_SET)
                         else:
-                            tcod.console_set_char_background(self.con, x, y, colors.get('light_ground'), tcod.BKGND_SET)
+                            tcod.console_set_char_background(self.con, x, y, color_vars.light_ground, tcod.BKGND_SET)
                         game_map.tiles[x][y].explored = True
                     elif game_map.tiles[x][y].explored:
                         if wall:
-                            tcod.console_set_char_background(self.con, x, y, colors.get('dark_wall'), tcod.BKGND_SET)
+                            tcod.console_set_char_background(self.con, x, y, color_vars.dark_wall, tcod.BKGND_SET)
                         else:
-                            tcod.console_set_char_background(self.con, x, y, colors.get('dark_ground'), tcod.BKGND_SET)
+                            tcod.console_set_char_background(self.con, x, y, color_vars.dark_ground, tcod.BKGND_SET)
 
         entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
         for entity in entities_in_render_order:

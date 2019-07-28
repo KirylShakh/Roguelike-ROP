@@ -2,6 +2,7 @@ from random import randint
 
 import tcod
 
+from game_vars import room_vars
 from random_utils import random_choice_from_dict, from_dungeon_level
 from renderer_object import RenderOrder
 from map_objects.tile import Tile
@@ -171,13 +172,13 @@ class GameMap:
 
         return False
 
-    def next_floor(self, player, message_log, constants):
+    def next_floor(self, player, message_log):
         self.dungeon_level += 1
         entities = [player]
 
         self.tiles = self.initialize_tiles()
-        self.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],
-                        constants['map_width'], constants['map_height'], player, entities)
+        self.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size,
+                        self.width, self.height, player, entities)
 
         player.fighter.heal(player.fighter.max_hp // 2)
         message_log.add_message(Message('You take a moment to rest, and recover your strength', tcod.light_violet))
