@@ -4,6 +4,7 @@ import tcod
 from components.item import Item
 from render_objects.render_order import RenderOrder
 
+
 class Entity:
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE,
                 fighter=None, ai=None, item=None, inventory=None, stairs=None, level=None,
@@ -48,7 +49,7 @@ class Entity:
         dy = int(round(dy / distance))
 
         if not (game_map.is_blocked(self.x + dx, self.y + dy)
-                or get_blocking_entities_at_location(entities, self.x + dx, self.y + dy)):
+                or entities.get_blocking_at_location(self.x + dx, self.y + dy)):
             self.move(dx, dy)
 
     def distance_to(self, other):
@@ -72,7 +73,7 @@ class Entity:
         # Scan all the objects to see if there are objects that must be navigated around
         # Check also that the object isn't self or the target (so that the start and the end points are free)
         # The AI class handles the situation if self is next to the target so it will not use this A* function anyway
-        for entity in entities:
+        for entity in entities.all:
             if entity.blocks and entity != self and entity != target:
                 # Set the tile as a wall so it must be navigated around
                 tcod.map_set_properties(fov, entity.x, entity.y, True, False)
@@ -101,10 +102,3 @@ class Entity:
 
             # Delete the path to free memory
         tcod.path_delete(my_path)
-
-def get_blocking_entities_at_location(entities, x, y):
-    for entity in entities:
-        if entity.blocks and entity.x == x and entity.y == y:
-            return entity
-
-    return None

@@ -7,7 +7,8 @@ from random_utils import random_choice_from_dict, from_dungeon_level
 from render_objects.render_order import RenderOrder
 from map_objects.tile import Tile
 from map_objects.rectangle import Rect
-from entity import Entity
+from entity_objects.entity import Entity
+from entity_objects.map_entities import MapEntities
 from components.fighter import Fighter
 from components.ai import BasicMonster
 from components.item import Item
@@ -41,7 +42,7 @@ class GameMap:
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.tiles[x][y].unblock()
 
-    def make_map(self, max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities):
+    def make_map(self, max_rooms, room_min_size, room_max_size, map_width, map_height, entities):
         rooms = []
         num_rooms = 0
 
@@ -65,12 +66,9 @@ class GameMap:
                 self.create_room(new_room)
                 (new_x, new_y) = new_room.center()
 
-                center_of_last_room_x = new_x
-                center_of_last_room_y = new_y
-
                 if num_rooms == 0:
-                    player.x = new_x
-                    player.y = new_y
+                    entities.player.x = new_x
+                    entities.player.y = new_y
                 else:
                     # all rooms after the first:
                     # connect it to the previous room with a tunnel
@@ -89,6 +87,9 @@ class GameMap:
                 self.place_entities(new_room, entities)
                 rooms.append(new_room)
                 num_rooms += 1
+
+        center_of_last_room_x = new_x
+        center_of_last_room_y = new_y
 
         stairs_component = Stairs(self.dungeon_level + 1)
         down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', tcod.white,
@@ -119,7 +120,7 @@ class GameMap:
             # Choose a random location in room
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
-            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+            if not entities.find_by_point(x, y):
                 monster_choice = random_choice_from_dict(monster_chances)
                 if monster_choice == 'orc':
                     fighter_component = Fighter(hp=20, defense=0, power=4, xp=35)
@@ -138,7 +139,7 @@ class GameMap:
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
 
-            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+            if not entities.find_by_point(x, y):
                 item_choice = random_choice_from_dict(item_chances)
 
                 if item_choice == 'healing_potion':
@@ -175,11 +176,11 @@ class GameMap:
 
     def next_floor(self, player, message_log):
         self.dungeon_level += 1
-        entities = [player]
+        entities = MapEntities(player)
 
         self.tiles = self.initialize_tiles()
         self.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size,
-                        self.width, self.height, player, entities)
+                        self.width, self.height, entities)
 
         player.fighter.heal(player.fighter.max_hp // 2)
         message_log.add_message(Message('You take a moment to rest, and recover your strength', tcod.light_violet))

@@ -18,12 +18,12 @@ class Renderer:
         self.con = tcod.console.Console(self.screen_width, self.screen_height)
         self.panel = tcod.console.Console(self.screen_width, self.screen_height)
 
-    def render_all(self, entities, player, game_map, fov_map, fov_recompute,
+    def render_all(self, entities, game_map, fov_map, fov_recompute,
                     message_log, entities_under_mouse, game_state):
         if fov_recompute:
             self.render_lit_map(game_map, fov_map)
 
-        entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
+        entities_in_render_order = sorted(entities.all, key=lambda x: x.render_order.value)
         for entity in entities_in_render_order:
             self.draw_entity(entity, fov_map, game_map)
 
@@ -31,9 +31,9 @@ class Renderer:
 
         self.panel.default_bg = tcod.black
         self.panel.clear()
-        self.render_hud(player, game_map, message_log, entities_under_mouse)
+        self.render_hud(entities.player, game_map, message_log, entities_under_mouse)
 
-        self.render_menus(player, game_state)
+        self.render_menus(entities.player, game_state)
 
     def render_lit_map(self, game_map, fov_map):
         for y in range(game_map.height):
@@ -90,7 +90,7 @@ class Renderer:
                     menu_vars.character_screen_height, self)
 
     def clear_all(self, entities):
-        for entity in entities:
+        for entity in entities.all:
             self.clear_entity(entity)
 
     def draw_entity(self, entity, fov_map, game_map):

@@ -29,7 +29,7 @@ def cast_lightning(*args, **kwargs):
     target = None
     closest_distance = maximum_range + 1
 
-    for entity in entities:
+    for entity in entities.all:
         if entity.fighter and entity != caster and fov_map.fov[entity.x][entity.y]:
             distance = caster.distance_to(entity)
 
@@ -62,7 +62,7 @@ def cast_fireball(*args, **kwargs):
 
     results.append({'consumed': True, 'message': Message('The fireball explodes, burning everything within {0} tiles'.format(radius), tcod.orange)})
 
-    for entity in entities:
+    for entity in entities.all:
         if entity.distance(target_x, target_y) <= radius and entity.fighter:
             results.append({'message': Message('The {0} gets burned for {1} hit points'.format(entity.name, damage), tcod.orange)})
             results.extend(entity.fighter.take_damage(damage))
@@ -81,7 +81,7 @@ def cast_confuse(*args, **kwargs):
         results.append({'consumed': False, 'message': Message('You cannot target a tile outside your field of view', tcod.yellow)})
         return results
 
-    for entity in entities:
+    for entity in entities.all:
         if entity.x == target_x and entity.y == target_y and entity.ai:
             confused_ai = ConfusedMonster(entity.ai, 10)
             confused_ai.own(entity)

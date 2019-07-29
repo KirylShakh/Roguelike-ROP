@@ -10,7 +10,6 @@ from death_functions import kill_monster, kill_player
 from game_messages import Message
 from loader_functions.initialize_new_game import get_game_variables
 from loader_functions.data_loaders import load_game, save_game
-from entity import get_blocking_entities_at_location
 from menus import main_menu, message_box
 
 
@@ -18,7 +17,6 @@ def main():
     renderer = Renderer()
     renderer.render_root()
 
-    player = None
     entities = []
     game_map = []
     message_log = None
@@ -47,12 +45,12 @@ def main():
                 if show_load_error_message and (new_game or load_saved_game or exit_game):
                     show_load_error_message = False
                 elif new_game:
-                    player, entities, game_map, message_log, game_state = get_game_variables()
+                    entities, game_map, message_log, game_state = get_game_variables()
                     show_main_menu = False
                     break
                 elif load_saved_game:
                     try:
-                        player, entities, game_map, message_log, game_state = load_game()
+                        entities, game_map, message_log, game_state = load_game()
                         show_main_menu = False
                         break
                     except FileNotFoundError:
@@ -61,10 +59,10 @@ def main():
                     raise SystemExit
         else:
             renderer.clear()
-            play_game(player, entities, game_map, message_log, game_state, renderer)
+            play_game(entities, game_map, message_log, game_state, renderer)
             show_main_menu = True
 
-def play_game(player, entities, game_map, message_log, game_state, renderer):
+def play_game(entities, game_map, message_log, game_state, renderer):
     fov_recompute = True
     fov_map = initialize_fov(game_map)
 
@@ -72,12 +70,13 @@ def play_game(player, entities, game_map, message_log, game_state, renderer):
 
     entities_under_mouse = ''
     targeting_item = None
+    player = entities.player
 
     while True:
         if fov_recompute:
             recompute_fov(fov_map, player.x, player.y)
 
-        renderer.render_all(entities, player, game_map, fov_map, fov_recompute,
+        renderer.render_all(entities, game_map, fov_map, fov_recompute,
                             message_log, entities_under_mouse, game_state)
         fov_recompute = False
 
@@ -93,7 +92,7 @@ def play_game(player, entities, game_map, message_log, game_state, renderer):
                 elif game_state == GameStates.TARGETING:
                     player_turn_results.append({'targeting_cancelled': True})
                 else:
-                    save_game(player, entities, game_map, message_log, game_state)
+                    save_game(entities, game_map, message_log, game_state)
                     return True
 
             player_turn_results = []
@@ -108,7 +107,7 @@ def play_game(player, entities, game_map, message_log, game_state, renderer):
                 destination_y = player.y + dy
 
                 if not game_map.is_blocked(player.x + dx, player.y + dy):
-                    target = get_blocking_entities_at_location(entities, destination_x, destination_y)
+                    target = entities.get_blocking_at_location(destination_x, destination_y)
 
                     if target:
                         attack_results = player.fighter.attack(target)
@@ -121,7 +120,7 @@ def play_game(player, entities, game_map, message_log, game_state, renderer):
 
             pickup = action.get('pickup')
             if pickup and game_state == GameStates.PLAYERS_TURN:
-                for entity in entities:
+                for entity in entities.all:
                     if entity.item and entity.x == player.x and entity.y == player.y:
                         pickup_results = player.inventory.add_item(entity)
                         player_turn_results.extend(pickup_results)
@@ -164,7 +163,7 @@ def play_game(player, entities, game_map, message_log, game_state, renderer):
                     player_turn_results.append({'targetting_cancelled': True})
 
             if action.get('take_stairs_down') and game_state == GameStates.PLAYERS_TURN:
-                for entity in entities:
+                for entity in entities.all:
                     if entity.stairs and entity.x == player.x and entity.y == player.y:
                         entities = game_map.next_floor(player, message_log)
                         fov_map = initialize_fov(game_map)
@@ -192,7 +191,7 @@ def play_game(player, entities, game_map, message_log, game_state, renderer):
             mouseover_tile = action.get('mouseover')
             if mouseover_tile:
                 (x, y) = (mouseover_tile.x, mouseover_tile.y)
-                entities_under_mouse = [entity.name for entity in entities
+                entities_under_mouse = [entity.name for entity in entities.all
                             if entity.x == x and entity.y == y and fov_map.fov[entity.x][entity.y]]
                 entities_under_mouse = ', '.join(entities_under_mouse).capitalize()
 
@@ -266,7 +265,7 @@ def play_game(player, entities, game_map, message_log, game_state, renderer):
                         game_state = GameStates.LEVEL_UP
 
             if game_state == GameStates.ENEMY_TURN:
-                for entity in entities:
+                for entity in entities.all:
                     if entity.ai:
                         enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
 

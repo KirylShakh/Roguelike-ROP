@@ -6,7 +6,8 @@ from components.inventory import Inventory
 from components.level import Level
 from components.equipment import Equipment, EquipmentSlots
 from components.equippable import Equippable
-from entity import Entity
+from entity_objects.entity import Entity
+from entity_objects.map_entities import MapEntities
 from game_messages import MessageLog
 from game_states import GameStates
 from map_objects.game_map import GameMap
@@ -21,7 +22,7 @@ def get_game_variables():
     player = Entity(0, 0, '@', tcod.white, 'Me', blocks=True, render_order=RenderOrder.ACTOR,
                     fighter=fighter_component, inventory=inventory_component, level=level_component,
                     equipment=equipment_component)
-    entities = [player]
+    entities = MapEntities(player)
 
     equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=2)
     dagger = Entity(0, 0, '-', tcod.sky, 'Dagger', equippable=equippable_component)
@@ -30,10 +31,10 @@ def get_game_variables():
 
     game_map = GameMap(map_vars.width, map_vars.height)
     game_map.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size,
-                        map_vars.width, map_vars.height, player, entities)
+                        map_vars.width, map_vars.height, entities)
 
     message_log = MessageLog(message_vars.x, message_vars.width, message_vars.height)
 
     game_state = GameStates.PLAYERS_TURN
 
-    return player, entities, game_map, message_log, game_state
+    return entities, game_map, message_log, game_state
