@@ -9,6 +9,9 @@ from map_objects.tile import Tile
 from map_objects.rectangle import Rect
 from entity_objects.entity import Entity
 from entity_objects.map_entities import MapEntities
+from game_messages import Message
+import entity_objects.creators.npc_creator as npc_creator
+import entity_objects.creators.item_creator as item_creator
 from components.fighter import Fighter
 from components.ai import BasicMonster
 from components.item import Item
@@ -16,7 +19,6 @@ from components.stairs import Stairs
 from components.equippable import Equippable
 from components.equipment import EquipmentSlots
 from item_functions import heal, cast_lightning, cast_fireball, cast_confuse
-from game_messages import Message
 
 
 class GameMap:
@@ -123,15 +125,9 @@ class GameMap:
             if not entities.find_by_point(x, y):
                 monster_choice = random_choice_from_dict(monster_chances)
                 if monster_choice == 'orc':
-                    fighter_component = Fighter(hp=20, defense=0, power=4, xp=35)
-                    ai_component = BasicMonster()
-                    monster = Entity(x, y, 'o', tcod.desaturated_green, 'Orc', blocks=True,
-                            render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                    monster = npc_creator.create_orc(x, y)
                 elif monster_choice == 'troll':
-                    fighter_component = Fighter(hp=30, defense=2, power=8, xp=100)
-                    ai_component = BasicMonster()
-                    monster = Entity(x, y, 'T', tcod.darker_green, 'Troll', blocks=True,
-                            render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                    monster = npc_creator.create_troll(x, y)
 
                 entities.append(monster)
 
@@ -143,29 +139,17 @@ class GameMap:
                 item_choice = random_choice_from_dict(item_chances)
 
                 if item_choice == 'healing_potion':
-                    item_component = Item(use_function=heal, amount=40)
-                    item = Entity(x, y, '!', tcod.violet, 'Healing potion', render_order=RenderOrder.ITEM,
-                            item=item_component)
+                    item = item_creator.create_healing_potion(x, y)
                 elif item_choice == 'sword':
-                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=3)
-                    item = Entity(x, y, '/', tcod.sky, 'Sword', equippable=equippable_component)
+                    item = item_creator.create_sword(x, y)
                 elif item_choice == 'shield':
-                    equippable_component = Equippable(EquipmentSlots.OFF_HAND, defense_bonus=1)
-                    item = Entity(x, y, '[', tcod.darker_orange, 'Shield', equippable=equippable_component)
+                    item = item_creator.create_shield(x, y)
                 elif item_choice == 'fireball_scroll':
-                    item_component = Item(use_function=cast_fireball, targeting=True, damage=25, radius=3,
-                                targeting_message=Message('Left-click a target tile for the fireball or right-click to cancel', tcod.light_cyan))
-                    item = Entity(x, y, '#', tcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
-                            item=item_component)
+                    item = item_creator.create_fireball_scroll(x, y)
                 elif item_choice == 'confuse_scroll':
-                    item_component = Item(use_function=cast_confuse, targeting=True,
-                                targeting_message=Message('Left-click an enemy to confuse it or right-click to cancel', tcod.light_cyan))
-                    item = Entity(x, y, '#', tcod.light_pink, 'Confuse Scroll', render_order=RenderOrder.ITEM,
-                            item=item_component)
+                    item = item_creator.create_confuse_scroll(x, y)
                 elif item_choice == 'lightning_scroll':
-                    item_component = Item(use_function=cast_lightning, damage=40, maximum_range=5)
-                    item = Entity(x, y, '#', tcod.yellow, 'Lightning Scroll', render_order=RenderOrder.ITEM,
-                            item=item_component)
+                    item = item_creator.create_lightning_scroll(x, y)
                 entities.append(item)
 
     def is_blocked(self, x, y):
