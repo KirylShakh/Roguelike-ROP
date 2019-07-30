@@ -18,6 +18,41 @@ class Renderer:
         self.con = tcod.console.Console(self.screen_width, self.screen_height)
         self.panel = tcod.console.Console(self.screen_width, self.screen_height)
 
+    def render_world(self, entities, world_map, fov_map, fov_recompute,
+                    message_log, whats_under_mouse, game_state):
+        if fov_recompute:
+            for y in range(world_map.height):
+                for x in range(world_map.width):
+                    tile = world_map.tiles[x][y]
+                    visible = fov_map.fov[x][y]
+
+                    if visible:
+                        tcod.console_set_char_background(self.con, x, y, tile.bg_color,
+                                                            tcod.BKGND_SET)
+                        self.con.default_fg = tile.color
+                        tcod.console_put_char(self.con, x, y, tile.char, tcod.BKGND_NONE)
+                        tile.explored = True
+                    elif tile.explored:
+                        tcod.console_set_char_background(self.con, x, y, tile.distant_bg_color,
+                                                            tcod.BKGND_SET)
+                        self.con.default_fg = tile.distant_color
+                        tcod.console_put_char(self.con, x, y, tile.char, tcod.BKGND_NONE)
+
+        entities_in_render_order = sorted(entities.all, key=lambda x: x.render_order.value)
+        for entity in entities_in_render_order:
+            visible = fov_map.fov[entity.x][entity.y]
+            if visible:
+                self.con.default_fg = entity.color
+                tcod.console_put_char(self.con, entity.x, entity.y, entity.char, tcod.BKGND_NONE)
+
+        self.con.blit(self.root)
+
+        self.panel.default_bg = tcod.black
+        self.panel.clear()
+        self.render_hud(entities.player, None, message_log, whats_under_mouse)
+
+        self.render_menus(entities.player, game_state)
+
     def render_all(self, entities, game_map, fov_map, fov_recompute,
                     message_log, entities_under_mouse, game_state):
         if fov_recompute:
@@ -67,7 +102,8 @@ class Renderer:
 
         self.render_bar(1, 1, 'HP', player.fighter.hp, player.fighter.max_hp,
                         tcod.light_red, tcod.darker_red)
-        tcod.console_print_ex(self.panel, 1, 3, tcod.BKGND_NONE, tcod.LEFT,
+        if game_map:
+            tcod.console_print_ex(self.panel, 1, 3, tcod.BKGND_NONE, tcod.LEFT,
                                 'Dungeon level: {0}'.format(game_map.dungeon_level))
 
         self.panel.default_fg = tcod.light_gray

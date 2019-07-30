@@ -13,12 +13,7 @@ from game_messages import Message
 import entity_objects.creators.npc_creator as npc_creator
 import entity_objects.creators.item_creator as item_creator
 from components.fighter import Fighter
-from components.ai import BasicMonster
-from components.item import Item
 from components.stairs import Stairs
-from components.equippable import Equippable
-from components.equipment import EquipmentSlots
-from item_functions import heal, cast_lightning, cast_fireball, cast_confuse
 
 
 class GameMap:
@@ -44,7 +39,7 @@ class GameMap:
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.tiles[x][y].unblock()
 
-    def make_map(self, max_rooms, room_min_size, room_max_size, map_width, map_height, entities):
+    def make_map(self, max_rooms, room_min_size, room_max_size, entities):
         rooms = []
         num_rooms = 0
 
@@ -56,8 +51,8 @@ class GameMap:
             w = randint(room_min_size, room_max_size)
             h = randint(room_min_size, room_max_size)
             # random position without going out of the boundaries of the map
-            x = randint(0, map_width - w - 1)
-            y = randint(0, map_height - h - 1)
+            x = randint(0, self.width - w - 1)
+            y = randint(0, self.height - h - 1)
 
             new_room = Rect(x, y, w, h)
             for other_room in rooms:
@@ -95,7 +90,8 @@ class GameMap:
 
         stairs_component = Stairs(self.dungeon_level + 1)
         down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', tcod.white,
-                                'Stairs down', render_order=RenderOrder.STAIRS, stairs=stairs_component)
+                                'Stairs down', render_order=RenderOrder.STAIRS,
+                                stairs=stairs_component)
         entities.append(down_stairs)
 
     def place_entities(self, room, entities):
@@ -163,10 +159,10 @@ class GameMap:
         entities = MapEntities(player)
 
         self.tiles = self.initialize_tiles()
-        self.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size,
-                        self.width, self.height, entities)
+        self.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size, entities)
 
         player.fighter.heal(player.fighter.max_hp // 2)
-        message_log.add_message(Message('You take a moment to rest, and recover your strength', tcod.light_violet))
+        message_log.add_message(Message('You take a moment to rest, and recover your strength',
+                                tcod.light_violet))
 
         return entities

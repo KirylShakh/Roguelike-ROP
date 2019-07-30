@@ -1,24 +1,25 @@
 import tcod
 import tcod.event
 
-from game_vars import screen_vars, fov_vars, panel_vars, menu_vars
+from game_vars import screen_vars, fov_vars, panel_vars, menu_vars, map_vars, room_vars
 import event_handler
 from render_objects.renderer import Renderer
-from fov_functions import initialize_fov, recompute_fov
+from fov_functions import initialize_fov, recompute_fov, initialize_world_fov, recompute_world_fov
 from game_states import GameStates
 from death_functions import kill_monster, kill_player
 from game_messages import Message
 from loader_functions.initialize_new_game import get_game_variables
 from loader_functions.data_loaders import load_game, save_game
 from menus import main_menu, message_box
+from map_objects.game_map import GameMap
 
 
 def main():
     renderer = Renderer()
     renderer.render_root()
 
-    entities = []
-    game_map = []
+    entities = None
+    world_map = None
     message_log = None
     game_state = None
 
@@ -45,12 +46,12 @@ def main():
                 if show_load_error_message and (new_game or load_saved_game or exit_game):
                     show_load_error_message = False
                 elif new_game:
-                    entities, game_map, message_log, game_state = get_game_variables()
+                    entities, world_map, message_log, game_state = get_game_variables()
                     show_main_menu = False
                     break
                 elif load_saved_game:
                     try:
-                        entities, game_map, message_log, game_state = load_game()
+                        entities, world_map, message_log, game_state = load_game()
                         show_main_menu = False
                         break
                     except FileNotFoundError:
@@ -59,10 +60,106 @@ def main():
                     raise SystemExit
         else:
             renderer.clear()
-            play_game(entities, game_map, message_log, game_state, renderer)
+            if not world_map.current_dungeon:
+                play_game(entities, world_map, message_log, game_state, renderer)
+            else:
+                enter_dungeon(entities, world_map, message_log, game_state, renderer)
             show_main_menu = True
 
-def play_game(entities, game_map, message_log, game_state, renderer):
+def play_game(entities, world_map, message_log, game_state, renderer):
+    fov_recompute = True
+    fov_map = initialize_world_fov(world_map)
+
+    player = entities.player
+    whats_under_mouse = ''
+    previous_game_state = game_state
+
+    while True:
+        if fov_recompute:
+            recompute_world_fov(fov_map, player.x, player.y)
+
+        renderer.render_world(entities, world_map, fov_map, fov_recompute,
+                            message_log, whats_under_mouse, game_state)
+        fov_recompute = False
+
+        tcod.console_flush()
+
+        renderer.clear_all(entities)
+
+        for event in tcod.event.wait():
+            player_turn_results = []
+
+            action = event_handler.handle(event, game_state)
+            if action.get('exit'):
+                if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN):
+                    game_state = previous_game_state
+                elif game_state == GameStates.TARGETING:
+                    player_turn_results.append({'targeting_cancelled': True})
+                else:
+                    save_game(entities, world_map, message_log, game_state)
+                    return True
+
+            if action.get('wait'):
+                game_state = GameStates.ENEMY_TURN
+
+            move = action.get('move')
+            if move and game_state == GameStates.PLAYERS_TURN:
+                dx, dy = move
+
+                if not world_map.is_void(player.x + dx, player.y + dy):
+                    player.move(dx, dy)
+                    fov_recompute = True
+
+                    game_state = GameStates.ENEMY_TURN
+
+            if action.get('show_inventory'):
+                previous_game_state = game_state
+                game_state = GameStates.SHOW_INVENTORY
+
+            if action.get('drop_inventory'):
+                previous_game_state = game_state
+                game_state = GameStates.DROP_INVENTORY
+
+            if action.get('show_character_screen'):
+                previous_game_state = game_state
+                game_state = GameStates.CHARACTER_SCREEN
+
+            if action.get('take_stairs_down') and game_state == GameStates.PLAYERS_TURN:
+                tile = world_map.tiles[player.x][player.y]
+                if tile.biom == 'dungeon':
+                    game_map = GameMap(map_vars.width, map_vars.height)
+                    game_map.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size,
+                                        entities)
+                    world_map.current_dungeon = game_map
+
+                    renderer.clear()
+                    enter_dungeon(entities, world_map, message_log, game_state, renderer)
+                    return True
+                else:
+                    message_log.add_message(Message('There are no dungeons nearbye', tcod.yellow))
+
+            if action.get('fullscreen'):
+                tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
+
+            mouseover_tile = action.get('mouseover')
+            if mouseover_tile:
+                (x, y) = (mouseover_tile.x, mouseover_tile.y)
+                if not world_map.is_void(x, y) and fov_map.fov[x][y]:
+                    whats_under_mouse = world_map.tiles[x][y].biom.capitalize()
+
+            if game_state == GameStates.ENEMY_TURN:
+                tile = world_map.tiles[player.x][player.y]
+                if not tile.visited:
+                    if tile.biom == 'forest':
+                        message_log.add_message(Message('You traverse empty lifeless silent forest'))
+                    elif tile.biom == 'dungeon':
+                        message_log.add_message(Message('There are bottomless ruins here'))
+                    tile.visited = True
+                game_state = GameStates.PLAYERS_TURN
+
+def enter_dungeon(entities, world_map, message_log, game_state, renderer):
+    game_map = world_map.current_dungeon
+
     fov_recompute = True
     fov_map = initialize_fov(game_map)
 
@@ -85,6 +182,8 @@ def play_game(entities, game_map, message_log, game_state, renderer):
         renderer.clear_all(entities)
 
         for event in tcod.event.wait():
+            player_turn_results = []
+
             action = event_handler.handle(event, game_state)
             if action.get('exit'):
                 if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN):
@@ -92,10 +191,8 @@ def play_game(entities, game_map, message_log, game_state, renderer):
                 elif game_state == GameStates.TARGETING:
                     player_turn_results.append({'targeting_cancelled': True})
                 else:
-                    save_game(entities, game_map, message_log, game_state)
+                    save_game(entities, world_map, message_log, game_state)
                     return True
-
-            player_turn_results = []
 
             if action.get('wait'):
                 game_state = GameStates.ENEMY_TURN
