@@ -98,6 +98,9 @@ def handle_show_inventory(event):
     return {}
 
 def handle_targeting(event):
+    if event.type == 'KEYDOWN':
+        if event.sym == tcod.event.K_ESCAPE:
+            return {'exit': True}
     return {}
 
 def handle_main_menu(event):

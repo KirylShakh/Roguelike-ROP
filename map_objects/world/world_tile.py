@@ -15,7 +15,7 @@ class WorldTile:
 
     def get_distant_color(self, color):
         return tcod.Color(
-            color.r  - int(color.r * 0.2),
-            color.g - int(color.g * 0.2),
-            color.b - int(color.b * 0.2)
+            color.r  - int(color.r * 0.5),
+            color.g - int(color.g * 0.5),
+            color.b - int(color.b * 0.5)
         )
