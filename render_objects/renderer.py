@@ -3,6 +3,7 @@ import tcod
 from game_vars import color_vars, screen_vars, panel_vars, menu_vars
 from game_states import GameStates
 from menus import inventory_menu, level_up_menu, character_screen
+from player_locations import PlayerLocations
 
 
 class Renderer:
@@ -17,6 +18,16 @@ class Renderer:
                         screen_vars.title, False, tcod.RENDERER_SDL2, 'F', True)
         self.con = tcod.console.Console(self.screen_width, self.screen_height)
         self.panel = tcod.console.Console(self.screen_width, self.screen_height)
+
+    def render_all(self, engine):
+        if engine.player_location == PlayerLocations.WORLD_MAP:
+            self.render_world(engine.entities, engine.world_map,
+                        engine.fov_map, engine.fov_recompute, engine.message_log,
+                        engine.whats_under_mouse, engine.game_state)
+        elif engine.player_location == PlayerLocations.DUNGEON:
+            self.render_dungeon(engine.entities, engine.world_map.current_dungeon,
+                        engine.fov_map, engine.fov_recompute, engine.message_log,
+                        engine.whats_under_mouse, engine.game_state)
 
     def render_world(self, entities, world_map, fov_map, fov_recompute,
                     message_log, whats_under_mouse, game_state):
@@ -53,7 +64,7 @@ class Renderer:
 
         self.render_menus(entities.player, game_state)
 
-    def render_all(self, entities, game_map, fov_map, fov_recompute,
+    def render_dungeon(self, entities, game_map, fov_map, fov_recompute,
                     message_log, entities_under_mouse, game_state):
         if fov_recompute:
             self.render_lit_map(game_map, fov_map)

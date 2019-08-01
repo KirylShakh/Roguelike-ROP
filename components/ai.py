@@ -11,7 +11,15 @@ class BasicMonster(Component):
 
         monster = self.owner
         if fov_map.fov[monster.x][monster.y]:
-            if monster.distance_to(target) >= 2:
+            distance = monster.distance_to(target)
+            path = game_map.path_straight(monster.x, monster.y, target.x, target.y)
+
+            if monster.name == 'Orc' and distance >= 4 and not game_map.is_path_blocked(path, entities):
+                results.append({
+                    'charge': path,
+                    'message': Message('The {0} charges at the {1}'.format(monster.name, target.name)),
+                })
+            elif distance >= 2:
                 monster.move_astar(target, entities, game_map)
             elif target.fighter and target.fighter.hp > 0:
                 attack_results = monster.fighter.attack(target)

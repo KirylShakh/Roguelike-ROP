@@ -11,6 +11,7 @@ from loader_functions.data_loaders import load_game
 from menus import main_menu, message_box
 from player_locations import PlayerLocations
 
+from action_processing.actions.animate_action import AnimateAction
 from action_processing.actions.quit_action import QuitAction
 from action_processing.actions.enter_action import EnterAction
 from action_processing.actions.fullscreen_action import FullscreenAction
@@ -51,6 +52,9 @@ class Engine:
 
         self.targeting_item = None
         self.player_turn_results = None
+        self.whats_under_mouse = ''
+
+        self.animations = []
 
     def main(self):
         self.renderer.render_root()
@@ -103,7 +107,7 @@ class Engine:
         self.fov_map = initialize_world_fov(self.world_map)
 
         player = self.entities.player
-        whats_under_mouse = ''
+        self.whats_under_mouse = ''
         self.previous_game_state = self.game_state
 
         self.player_location = PlayerLocations.WORLD_MAP
@@ -111,13 +115,7 @@ class Engine:
         while True:
             if self.fov_recompute:
                 recompute_world_fov(self.fov_map, player.x, player.y)
-            self.renderer.render_world(self.entities, self.world_map, self.fov_map,
-                                self.fov_recompute, self.message_log,
-                                whats_under_mouse, self.game_state)
-            self.fov_recompute = False
-
-            tcod.console_flush()
-            self.renderer.clear_all(self.entities)
+            self.render_tick()
 
             for event in tcod.event.wait():
                 self.player_turn_results = []
@@ -159,7 +157,7 @@ class Engine:
 
                 if processed_event.get('mouseover'):
                     action = MouseoverAction(self)
-                    whats_under_mouse = action.run(processed_event.get('mouseover'))
+                    self.whats_under_mouse = action.run(processed_event.get('mouseover'))
 
                 if self.game_state == GameStates.ENEMY_TURN:
                     action = WorldAction(self)
@@ -173,19 +171,14 @@ class Engine:
 
         self.previous_game_state = self.game_state
 
-        entities_under_mouse = ''
+        self.whats_under_mouse = ''
         player = self.entities.player
         self.player_location = PlayerLocations.DUNGEON
 
         while True:
             if self.fov_recompute:
                 recompute_fov(self.fov_map, player.x, player.y)
-            self.renderer.render_all(self.entities, game_map, self.fov_map, self.fov_recompute,
-                                self.message_log, entities_under_mouse, self.game_state)
-            self.fov_recompute = False
-
-            tcod.console_flush()
-            self.renderer.clear_all(self.entities)
+            self.render_tick()
 
             for event in tcod.event.wait():
                 self.player_turn_results = []
@@ -247,7 +240,7 @@ class Engine:
 
                 if processed_event.get('mouseover'):
                     action = MouseoverAction(self)
-                    entities_under_mouse = action.run(processed_event.get('mouseover'))
+                    self.whats_under_mouse = action.run(processed_event.get('mouseover'))
 
                 for player_turn_result in self.player_turn_results:
                     if player_turn_result.get('message'):
@@ -289,6 +282,17 @@ class Engine:
                 if self.game_state == GameStates.ENEMY_TURN:
                     action = WorldAction(self)
                     action.run()
+
+                if self.game_state == GameStates.ANIMATING:
+                    action = AnimateAction(self)
+                    action.run()
+
+    def render_tick(self):
+        self.renderer.render_all(self)
+        self.fov_recompute = False
+
+        tcod.console_flush()
+        self.renderer.clear_all(self.entities)
 
 if __name__ == '__main__':
     engine = Engine()

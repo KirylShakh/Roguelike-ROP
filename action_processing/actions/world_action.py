@@ -4,6 +4,8 @@ from player_locations import PlayerLocations
 from game_messages import Message
 from death_functions import kill_monster, kill_player
 
+from action_processing.animations.charge_animation import ChargeAnimation
+
 
 class WorldAction(Action):
     def run(self):
@@ -38,6 +40,11 @@ class WorldAction(Action):
                     if message:
                         self.engine.message_log.add_message(message)
 
+                    charge = enemy_turn_result.get('charge')
+                    if charge:
+                        animation = ChargeAnimation(entity, charge)
+                        self.engine.animations.append(animation)
+
                     if dead_entity:
                         if dead_entity == player:
                             message, self.engine.game_state = kill_player(player)
@@ -52,4 +59,7 @@ class WorldAction(Action):
                 if self.engine.game_state == GameStates.PLAYER_DEAD:
                     break
         else:
-            self.engine.game_state = GameStates.PLAYERS_TURN
+            if len(self.engine.animations) > 0:
+                self.engine.game_state = GameStates.ANIMATING
+            else:
+                self.engine.game_state = GameStates.PLAYERS_TURN
