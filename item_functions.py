@@ -3,6 +3,11 @@ import tcod
 from game_messages import Message
 from components.ai import ConfusedMonster
 
+from action_processing.animations.push_animation import PushAnimation
+from action_processing.animations.lightning_animation import LightningAnimation
+from action_processing.animations.explosion_animation import ExplosionAnimation
+from action_processing.actions.take_damage_action import TakeDamageAction
+
 def heal(*args, **kwargs):
     entity = args[0]
     amount = kwargs.get('amount')
@@ -24,6 +29,8 @@ def cast_lightning(*args, **kwargs):
     damage = kwargs.get('damage')
     maximum_range = kwargs.get('maximum_range')
 
+    engine = kwargs.get('engine')
+
     results = []
 
     target = None
@@ -40,19 +47,26 @@ def cast_lightning(*args, **kwargs):
     if target:
         results.append({'consumed': True, 'target': target,
                 'message': Message('A lightning bolt strikes the {0} with a loud thunder for {1} damage'.format(target.name, damage))})
-        results.extend(target.fighter.take_damage(damage))
+
+        action = TakeDamageAction(engine)
+        action.setup(target, damage)
+
+        from_point = (engine.entities.player.x, engine.entities.player.y)
+        animation = LightningAnimation(engine, from_point, target, callback_action=action)
+        engine.animations.append(animation)
     else:
         results.append({'consumed': False, 'target': None, 'message': Message('No enemy is close enough to strike', tcod.red)})
 
     return results
 
 def cast_fireball(*args, **kwargs):
-    entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')
     radius = kwargs.get('radius')
     target_x = kwargs.get('target_x')
     target_y = kwargs.get('target_y')
+
+    engine = kwargs.get('engine')
 
     results = []
 
@@ -62,10 +76,8 @@ def cast_fireball(*args, **kwargs):
 
     results.append({'consumed': True, 'message': Message('The fireball explodes, burning everything within {0} tiles'.format(radius), tcod.orange)})
 
-    for entity in entities.all:
-        if entity.distance(target_x, target_y) <= radius and entity.fighter:
-            results.append({'message': Message('The {0} gets burned for {1} hit points'.format(entity.name, damage), tcod.orange)})
-            results.extend(entity.fighter.take_damage(damage))
+    animation = ExplosionAnimation(engine, (target_x, target_y), radius, tcod.light_orange, damage)
+    engine.animations.append(animation)
 
     return results
 

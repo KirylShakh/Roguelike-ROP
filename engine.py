@@ -26,6 +26,8 @@ from action_processing.actions.right_click_action import RightClickAction
 from action_processing.actions.wait_action import WaitAction
 from action_processing.actions.world_action import WorldAction
 
+from action_processing.actions.cast_fireball_action import CastFireballAction
+
 from action_processing.results.dead_entity_result import DeadEntityResult
 from action_processing.results.equip_result import EquipResult
 from action_processing.results.item_added_result import ItemAddedResult
@@ -55,6 +57,8 @@ class Engine:
         self.whats_under_mouse = ''
 
         self.animations = []
+
+        self.targeting_ability = None
 
     def main(self):
         self.renderer.render_root()
@@ -242,6 +246,10 @@ class Engine:
                     action = MouseoverAction(self)
                     self.whats_under_mouse = action.run(processed_event.get('mouseover'))
 
+                if processed_event.get('cast_fireball'):
+                    action = CastFireballAction(self)
+                    action.run()
+
                 for player_turn_result in self.player_turn_results:
                     if player_turn_result.get('message'):
                         result = MessageResult(self)
@@ -279,13 +287,15 @@ class Engine:
                         result = XpResult(self)
                         result.run(player_turn_result.get('xp'))
 
+                if len(self.animations) > 0:
+                    self.process_animations()
+
                 if self.game_state == GameStates.ENEMY_TURN:
                     action = WorldAction(self)
                     action.run()
 
                 if self.game_state == GameStates.ANIMATING:
-                    action = AnimateAction(self)
-                    action.run()
+                    self.process_animations()
 
     def render_tick(self):
         self.renderer.render_all(self)
@@ -293,6 +303,23 @@ class Engine:
 
         tcod.console_flush()
         self.renderer.clear_all(self.entities)
+
+    def process_animations(self):
+        action = AnimateAction(self)
+        animate_results = action.run()
+
+        for animate_result in animate_results:
+            if animate_result.get('message'):
+                result = MessageResult(self)
+                result.run(animate_result.get('message'))
+
+            if animate_result.get('dead'):
+                result = DeadEntityResult(self)
+                result.run(animate_result.get('dead'))
+
+            if animate_result.get('xp'):
+                result = XpResult(self)
+                result.run(animate_result.get('xp'))
 
 if __name__ == '__main__':
     engine = Engine()

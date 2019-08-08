@@ -68,6 +68,10 @@ def handle_player_turn(event):
         if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
             return {'fullscreen': True}
 
+        # test
+        if event.sym == tcod.event.K_f:
+            return {'cast_fireball': True}
+
     return {}
 
 def handle_player_dead(event):

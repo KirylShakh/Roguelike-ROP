@@ -13,6 +13,7 @@ from game_messages import Message
 import entity_objects.creators.npc_creator as npc_creator
 import entity_objects.creators.item_creator as item_creator
 from components.stairs import Stairs
+from map_objects.path_functions import path_straight
 
 
 class GameMap:
@@ -174,68 +175,3 @@ class GameMap:
 
     def path_straight(self, src_x, src_y, dst_x, dst_y):
         return path_straight(src_x, src_y, dst_x, dst_y)
-
-
-def path_straight(src_x, src_y, dst_x, dst_y):
-    delta_x = dst_x - src_x
-    delta_y = dst_y - src_y
-
-    sign_x = -1 if delta_x < 0 else 1
-    sign_y = -1 if delta_y < 0 else 1
-
-    path = []
-
-    if abs(delta_x) < abs(delta_y):
-        multiplier_x = abs(delta_x / delta_y)
-        multiplier_y = 1
-    else:
-        multiplier_y = abs(delta_y / delta_x)
-        multiplier_x = 1
-
-    x = src_x
-    y = src_y
-    dx = 0
-    dy = 0
-    while True:
-        dx += sign_x * multiplier_x
-        dy += sign_y * multiplier_y
-
-        rounded_dx = round(dx)
-        rounded_dy = round(dy)
-        x += rounded_dx
-        y += rounded_dy
-
-        path.append((x, y))
-
-        if abs(dst_x - x) <= 1 and abs(dst_y - y) <= 1:
-            break
-
-        if abs(rounded_dx) >= 1:
-            dx = 0
-        if abs(rounded_dy) >= 1:
-            dy = 0
-
-    return path
-
-def path_by_distance(src_x, src_y, dst_x, dst_y):
-    path = []
-    x = src_x
-    y = src_y
-    while True:
-        neighbours = [(x + 1, y), (x + 1, y + 1), (x, y + 1), (x - 1, y + 1),
-                    (x - 1, y), (x - 1, y - 1), (x, y - 1), (x + 1, y -1)]
-
-        min_distance_sq = (x - dst_x) ** 2 + (y - dst_y) ** 2
-        next_point = (x, y)
-        for dx, dy in neighbours:
-            distance_sq = (dx - dst_x) ** 2 + (dy - dst_y) ** 2
-            if distance_sq < min_distance_sq:
-                min_distance_sq = distance_sq
-                next_point = (dx, dy)
-
-        x, y = next_point
-        if x == dst_x and y == dst_y:
-            break
-        path.append(next_point)
-
-    return path

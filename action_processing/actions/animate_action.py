@@ -1,13 +1,17 @@
+import time
+
 from action_processing.actions.action import Action
 from game_states import GameStates
 
 
 class AnimateAction(Action):
     def run(self):
+        results = []
+
         while len(self.engine.animations) != 0:
             completed = []
             for animation in self.engine.animations:
-                animation.next_tick()
+                results.extend(animation.next_tick())
                 if animation.completed:
                     completed.append(animation)
 
@@ -15,5 +19,8 @@ class AnimateAction(Action):
                 self.engine.animations.remove(animation)
 
             self.engine.render_tick()
+            time.sleep(0.15)
 
-        self.engine.game_state = GameStates.PLAYERS_TURN
+        self.engine.game_state = self.engine.previous_game_state
+
+        return results

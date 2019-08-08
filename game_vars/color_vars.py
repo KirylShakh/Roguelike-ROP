@@ -15,6 +15,9 @@ fireball_scroll = tcod.red
 lightning_scroll = tcod.yellow
 confuse_scroll = tcod.light_pink
 
+lightning_arc = tcod.lightest_sky
+fireball_explosion = tcod.dark_orange
+
 target_message = tcod.light_cyan
 
 forest = tcod.dark_green
@@ -26,3 +29,4 @@ light_wall = tcod.Color(130, 110, 50)
 light_ground = tcod.Color(200, 180, 50)
 
 warning = tcod.yellow
+spell = tcod.orange

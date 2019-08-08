@@ -12,6 +12,7 @@ class InventoryIndexAction(Action):
 
             if self.engine.game_state == GameStates.SHOW_INVENTORY:
                 self.engine.player_turn_results.extend(player.inventory.use(item,
-                            entities=self.engine.entities, fov_map=self.engine.fov_map))
+                            entities=self.engine.entities, fov_map=self.engine.fov_map,
+                            engine=self.engine))
             elif self.engine.game_state == GameStates.DROP_INVENTORY:
                 self.engine.player_turn_results.extend(player.inventory.drop_item(item))

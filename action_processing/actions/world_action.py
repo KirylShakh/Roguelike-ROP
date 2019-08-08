@@ -42,7 +42,7 @@ class WorldAction(Action):
 
                     charge = enemy_turn_result.get('charge')
                     if charge:
-                        animation = ChargeAnimation(entity, charge)
+                        animation = ChargeAnimation(self.engine, entity, charge, player)
                         self.engine.animations.append(animation)
 
                     if dead_entity:
@@ -54,12 +54,23 @@ class WorldAction(Action):
                         self.engine.message_log.add_message(message)
 
                         if self.engine.game_state == GameStates.PLAYER_DEAD:
+                            self.play_animations_for_dead_player()
                             break
 
                 if self.engine.game_state == GameStates.PLAYER_DEAD:
+                    self.play_animations_for_dead_player()
                     break
         else:
-            if len(self.engine.animations) > 0:
+            if self.need_play_animations():
                 self.engine.game_state = GameStates.ANIMATING
+                self.engine.previous_game_state = GameStates.PLAYERS_TURN
             else:
                 self.engine.game_state = GameStates.PLAYERS_TURN
+
+    def need_play_animations(self):
+        return len(self.engine.animations) > 0
+
+    def play_animations_for_dead_player(self):
+        if self.need_play_animations():
+            self.engine.game_state = GameStates.ANIMATING
+            self.engine.previous_game_state = GameStates.PLAYER_DEAD
