@@ -101,25 +101,29 @@ class Engine:
                         raise SystemExit
             else:
                 self.renderer.clear()
-                if not self.world_map.current_dungeon:
-                    self.play_game()
-                else:
-                    self.enter_dungeon()
+                if self.world_map.current_dungeon:
+                    self.player_location = PlayerLocations.DUNGEON
+                self.play_game()
+
                 show_main_menu = True
 
     def play_game(self):
-        self.fov_recompute = True
-        self.fov_map = initialize_world_fov(self.world_map)
+        if self.player_location == None:
+            self.player_location = PlayerLocations.WORLD_MAP
 
-        player = self.entities.player
-        self.whats_under_mouse = ''
-        self.previous_game_state = self.game_state
+        if self.player_location == PlayerLocations.WORLD_MAP:
+            self.fov_recompute = True
+            self.fov_map = initialize_world_fov(self.world_map)
 
-        self.player_location = PlayerLocations.WORLD_MAP
+            self.whats_under_mouse = ''
+            self.previous_game_state = self.game_state
+        elif self.player_location == PlayerLocations.DUNGEON:
+            if self.enter_dungeon():
+                return True
 
         while True:
             if self.fov_recompute:
-                recompute_world_fov(self.fov_map, player.x, player.y)
+                recompute_world_fov(self.fov_map, self.entities.player.x, self.entities.player.y)
             self.render_tick()
 
             for event in tcod.event.wait():
