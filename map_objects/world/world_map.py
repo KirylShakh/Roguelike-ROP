@@ -12,6 +12,7 @@ class WorldMap:
         self.tiles = self.initialize_tiles()
 
         self.current_dungeon = None
+        self.current_dungeon_entry_point = None
 
     def initialize_tiles(self):
         forest_chars = {

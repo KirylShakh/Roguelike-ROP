@@ -14,6 +14,7 @@ from player_locations import PlayerLocations
 from action_processing.actions.animate_action import AnimateAction
 from action_processing.actions.quit_action import QuitAction
 from action_processing.actions.enter_action import EnterAction
+from action_processing.actions.exit_action import ExitAction
 from action_processing.actions.fullscreen_action import FullscreenAction
 from action_processing.actions.info_screen_action import InfoScreenAction
 from action_processing.actions.inventory_index_action import InventoryIndexAction
@@ -154,6 +155,8 @@ class Engine:
                     action = EnterAction(self)
                     if action.run():
                         return True
+                    else:
+                        break
 
                 if processed_event.get('fullscreen'):
                     action = FullscreenAction(self)
@@ -180,6 +183,9 @@ class Engine:
         self.player_location = PlayerLocations.DUNGEON
 
         while True:
+            if self.player_location == PlayerLocations.WORLD_MAP:
+                return False
+
             if self.fov_recompute:
                 recompute_fov(self.fov_map, player.x, player.y)
             self.render_tick()
@@ -235,6 +241,11 @@ class Engine:
 
                 if processed_event.get('take_stairs_down'):
                     action = EnterAction(self)
+                    if action.run():
+                        break
+
+                if processed_event.get('take_stairs_up'):
+                    action = ExitAction(self)
                     if action.run():
                         break
 

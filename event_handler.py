@@ -64,6 +64,8 @@ def handle_player_turn(event):
 
         if event.sym == tcod.event.K_PERIOD and (tcod.event.KMOD_LSHIFT or tcod.event.KMOD_RSHIFT):
             return {'take_stairs_down': True}
+        elif event.sym == tcod.event.K_COMMA and (tcod.event.KMOD_LSHIFT or tcod.event.KMOD_RSHIFT):
+            return {'take_stairs_up': True}
 
         if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
             return {'fullscreen': True}

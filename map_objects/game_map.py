@@ -12,7 +12,7 @@ from entity_objects.map_entities import MapEntities
 from game_messages import Message
 import entity_objects.creators.npc_creator as npc_creator
 import entity_objects.creators.item_creator as item_creator
-from components.stairs import Stairs
+from components.stairs import Stairs, StairsDirections
 from map_objects.path_functions import path_straight
 
 
@@ -39,7 +39,7 @@ class GameMap:
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.tiles[x][y].unblock()
 
-    def make_map(self, max_rooms, room_min_size, room_max_size, entities):
+    def make_map(self, max_rooms, room_min_size, room_max_size, entities, moving_down=True):
         rooms = []
         num_rooms = 0
 
@@ -85,14 +85,37 @@ class GameMap:
                 rooms.append(new_room)
                 num_rooms += 1
 
-        center_of_last_room_x = new_x
-        center_of_last_room_y = new_y
+        if moving_down:
+            down_stairs_x = new_x
+            down_stairs_y = new_y
+
+            up_stairs_x = entities.player.x
+            up_stairs_y = entities.player.y
+        else:
+            down_stairs_x = entities.player.x
+            down_stairs_y = entities.player.y
+
+            up_stairs_x = new_x
+            up_stairs_y = new_y
 
         stairs_component = Stairs(self.dungeon_level + 1)
-        down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', tcod.white,
+        down_stairs = Entity(down_stairs_x, down_stairs_y, '>', tcod.white,
                                 'Stairs down', render_order=RenderOrder.STAIRS,
                                 stairs=stairs_component)
         entities.append(down_stairs)
+
+        if self.dungeon_level == 1:
+            direction = StairsDirections.WORLD
+            stairs_name = 'Stairs outside'
+        else:
+            direction = StairsDirections.UP
+            stairs_name = 'Stairs up'
+
+        up_stairs_component = Stairs(self.dungeon_level, direction=direction)
+        up_stairs = Entity(up_stairs_x, up_stairs_y, '<', tcod.white,
+                            stairs_name, render_order=RenderOrder.STAIRS,
+                            stairs=up_stairs_component)
+        entities.append(up_stairs)
 
     def place_entities(self, room, entities):
         max_monsters_per_room = from_dungeon_level([[2, 1], [3, 4], [5, 6]], self.dungeon_level)
@@ -160,6 +183,19 @@ class GameMap:
 
         self.tiles = self.initialize_tiles()
         self.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size, entities)
+
+        player.fighter.heal(player.fighter.max_hp // 2)
+        message_log.add_message(Message('You take a moment to rest, and recover your strength',
+                                tcod.light_violet))
+
+        return entities
+
+    def previous_floor(self, player, message_log):
+        self.dungeon_level -= 1
+        entities = MapEntities(player)
+
+        self.tiles = self.initialize_tiles()
+        self.make_map(room_vars.max_num, room_vars.min_size, room_vars.max_size, entities, False)
 
         player.fighter.heal(player.fighter.max_hp // 2)
         message_log.add_message(Message('You take a moment to rest, and recover your strength',
