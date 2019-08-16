@@ -30,7 +30,7 @@ class MoveAction(Action):
             destination_x = player.x + dx
             destination_y = player.y + dy
 
-            if not game_map.is_blocked(player.x + dx, player.y + dy):
+            if not game_map.is_void(destination_x, destination_y) and not game_map.is_blocked(destination_x, destination_y):
                 target = self.engine.entities.get_blocking_at_location(destination_x, destination_y)
 
                 if target:

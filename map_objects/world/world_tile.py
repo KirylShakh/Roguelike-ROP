@@ -1,5 +1,6 @@
 import tcod
 
+# Merge this with Tile class
 class WorldTile:
     def __init__(self, biom, char, color, bg_color=tcod.black):
         self.biom = biom

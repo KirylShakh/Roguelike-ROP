@@ -105,6 +105,7 @@ class Engine:
                     self.player_location = PlayerLocations.DUNGEON
                 self.play_game()
 
+                self.player_location = PlayerLocations.WORLD_MAP
                 show_main_menu = True
 
     def play_game(self):
@@ -191,7 +192,7 @@ class Engine:
                 return False
 
             if self.fov_recompute:
-                recompute_fov(self.fov_map, player.x, player.y)
+                recompute_fov(self.fov_map, player.x, player.y, self.world_map.current_dungeon.map_creator.fov_radius)
             self.render_tick()
 
             for event in tcod.event.wait():

@@ -84,24 +84,12 @@ class Renderer:
     def render_lit_map(self, game_map, fov_map):
         for y in range(game_map.height):
             for x in range(game_map.width):
-                visible = fov_map.fov[x][y]
-                wall = game_map.tiles[x][y].block_sight
-
-                if visible:
-                    if wall:
-                        tcod.console_set_char_background(self.con, x, y, color_vars.light_wall,
-                                                            tcod.BKGND_SET)
-                    else:
-                        tcod.console_set_char_background(self.con, x, y, color_vars.light_ground,
-                                                            tcod.BKGND_SET)
-                    game_map.tiles[x][y].explored = True
-                elif game_map.tiles[x][y].explored:
-                    if wall:
-                        tcod.console_set_char_background(self.con, x, y, color_vars.dark_wall,
-                                                            tcod.BKGND_SET)
-                    else:
-                        tcod.console_set_char_background(self.con, x, y, color_vars.dark_ground,
-                                                            tcod.BKGND_SET)
+                bg_color, char, char_color = game_map.map_creator.tile_render_info(x, y, fov_map.fov[x][y])
+                if bg_color:
+                    tcod.console_set_char_background(self.con, x, y, bg_color, tcod.BKGND_SET)
+                if char and char_color:
+                    self.con.default_fg = char_color
+                    tcod.console_put_char(self.con, x, y, char, tcod.BKGND_NONE)
 
     def render_hud(self, player, game_map, message_log, entities_under_mouse):
         # Print the game messages, one line at a time

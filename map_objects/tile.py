@@ -8,6 +8,12 @@ class Tile:
 
         self.explored = False
 
+        self.char = None
+
     def unblock(self):
         self.blocked = False
         self.block_sight = False
+
+    def block(self):
+        self.blocked = True
+        self.block_sight = True

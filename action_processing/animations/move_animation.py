@@ -43,5 +43,6 @@ class MoveAnimation(object):
     def recompute_fov(self):
         player = self.engine.entities.player
         if self.entity == player:
-            recompute_fov(self.engine.fov_map, player.x, player.y)
+            fov_radius = self.engine.world_map.current_dungeon.map_creator.fov_radius
+            recompute_fov(self.engine.fov_map, player.x, player.y, fov_radius)
             self.engine.fov_recompute = True

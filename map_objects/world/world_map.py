@@ -3,6 +3,7 @@ import tcod
 from map_objects.world.world_tile import WorldTile
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
+from map_objects.world.biomes import Biomes
 
 
 class WorldMap:
@@ -12,7 +13,7 @@ class WorldMap:
         self.tiles = self.initialize_tiles()
 
         self.current_dungeon = None
-        self.current_dungeon_entry_point = None
+        self.current_dungeon_entry_point = (0, 0)
 
     def initialize_tiles(self):
         forest_chars = {
@@ -26,7 +27,7 @@ class WorldMap:
             'Y': 35,
         }
 
-        tiles = [[WorldTile('forest', random_choice_from_dict(forest_chars), color_vars.forest, color_vars.forest_bg)
+        tiles = [[WorldTile(Biomes.FOREST, random_choice_from_dict(forest_chars), color_vars.forest, color_vars.forest_bg)
                     for y in range(self.height)] for x in range(self.width)]
         return tiles
 
@@ -38,7 +39,7 @@ class WorldMap:
         dungeon_entrance_x = self.width // 2
         dungeon_entrance_y = self.height // 2
         dungeon_tile = self.tiles[dungeon_entrance_x][dungeon_entrance_y]
-        dungeon_tile.biom = 'dungeon'
+        dungeon_tile.biom = Biomes.DUNGEON
         dungeon_tile.char = tcod.CHAR_RADIO_SET
         dungeon_tile.color = tcod.darker_grey
         dungeon_tile.bg_color = tcod.black
@@ -47,3 +48,11 @@ class WorldMap:
 
     def is_void(self, x, y):
         return x < 0 or y < 0 or x >= self.width or y >= self.height
+
+    def current_biom(self, player=None):
+        if self.current_dungeon:
+            x, y = self.current_dungeon_entry_point
+            return self.tiles[x][y].biom
+        elif player and not self.current_dungeon:
+            return self.tiles[player.x][player.y].biom
+        return None

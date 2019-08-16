@@ -3,6 +3,7 @@ from game_states import GameStates
 from player_locations import PlayerLocations
 from game_messages import Message
 from death_functions import kill_monster, kill_player
+from map_objects.world.biomes import Biomes
 
 from action_processing.animations.charge_animation import ChargeAnimation
 
@@ -18,9 +19,9 @@ class WorldAction(Action):
         player = self.engine.entities.player
         tile = self.engine.world_map.tiles[player.x][player.y]
         if not tile.visited:
-            if tile.biom == 'forest':
+            if tile.biom == Biomes.FOREST:
                 self.engine.message_log.add_message(Message('You traverse empty lifeless silent forest'))
-            elif tile.biom == 'dungeon':
+            elif tile.biom == Biomes.DUNGEON:
                 self.engine.message_log.add_message(Message('There are bottomless ruins here'))
             tile.visited = True
         self.engine.game_state = GameStates.PLAYERS_TURN
