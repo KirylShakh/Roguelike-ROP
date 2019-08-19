@@ -24,6 +24,7 @@ from action_processing.actions.move_action import MoveAction
 from action_processing.actions.pickup_action import PickupAction
 from action_processing.actions.left_click_action import LeftClickAction
 from action_processing.actions.right_click_action import RightClickAction
+from action_processing.actions.return_to_world_map_action import ReturnToWorldMapAction
 from action_processing.actions.wait_action import WaitAction
 from action_processing.actions.world_action import WorldAction
 
@@ -189,7 +190,11 @@ class Engine:
 
         while True:
             if self.player_location == PlayerLocations.WORLD_MAP:
+                action = ReturnToWorldMapAction(self)
+                action.run()
                 return False
+
+            exit_location = False
 
             if self.fov_recompute:
                 recompute_fov(self.fov_map, player.x, player.y, self.world_map.current_dungeon.map_creator.fov_radius)
@@ -246,13 +251,11 @@ class Engine:
 
                 if processed_event.get('take_stairs_down'):
                     action = EnterAction(self)
-                    if action.run():
-                        break
+                    action.run()
 
                 if processed_event.get('take_stairs_up'):
                     action = ExitAction(self)
-                    if action.run():
-                        break
+                    action.run()
 
                 if processed_event.get('fullscreen'):
                     action = FullscreenAction(self)
@@ -302,6 +305,12 @@ class Engine:
                     if player_turn_result.get('xp'):
                         result = XpResult(self)
                         result.run(player_turn_result.get('xp'))
+
+                    if player_turn_result.get('exit_location'):
+                        exit_location = True
+
+                if exit_location:
+                    break
 
                 if len(self.animations) > 0:
                     self.process_animations()

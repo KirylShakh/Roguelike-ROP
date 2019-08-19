@@ -60,7 +60,7 @@ tree_choices_names = {
     'dark_grey': 'Acacia',
     'brown': 'Ulmus',
     'darkest_grey': 'Prunus',
-    'yellow': 'Pinus',
+    'yellow': 'Sequoia',
     'red': 'Salix',
     'green': 'Citrus',
 }

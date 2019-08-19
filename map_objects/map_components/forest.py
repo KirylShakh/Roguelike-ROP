@@ -23,7 +23,7 @@ class Forest(MapComponent):
         self.trees = []
         primary_tree, secondary_tree, tree_colors = self.choose_forest_trees()
 
-        for i in range(density):
+        for _ in range(density):
             # new tree diameter
             d = randint(1, self.average_tree_diameter * 2)
             # new tree position
@@ -61,13 +61,36 @@ class Forest(MapComponent):
         return (primary_tree, secondary_tree, tree_colors)
 
     def find_empty_spot(self):
-        for x in range(self.owner.width):
-            for y in range(self.owner.height):
-                if not self.owner.is_blocked(x, y):
-                    return (x, y)
+        center_x = int(self.owner.width / 2)
+        center_y = int(self.owner.height / 2)
+        checked_tiles = [[False for y in range(self.owner.height)] for x in range(self.owner.width)]
+
+        result = self.check_empty_spot(checked_tiles, center_x, center_y, 0)
+        if result:
+            x, y, _ = result
+            return (x, y)
 
         print('whoops no free space in forest')
         return (0, 0)
+
+    def check_empty_spot(self, checked_tiles, x, y, distance):
+        checked_tiles[x][y] = True
+        if not self.owner.is_blocked(x, y):
+            return (x, y, distance)
+
+        deltas = [-1, 0, 1]
+        for i in deltas:
+            for j in deltas:
+                if self.owner.is_void(x, y) or checked_tiles[x + i][y + j]:
+                    continue
+
+                result = self.check_empty_spot(checked_tiles, x + i, y + j, distance + 1)
+                if result:
+                    _, _, distance = result
+                    if distance < self.average_tree_diameter * 2:
+                        return result
+
+        return None
 
     # function fills structures like this (example for square with side = 5 which has 2 options)
     # --+--  -+++-
@@ -209,6 +232,8 @@ class Forest(MapComponent):
                     grass_char_color = color_vars.grass_choices_colors[grass_char_color_choice]
 
                     grass_name = grass_chars_names[grass_char_symbol]
+                    if not self.shadowed_tiles[x][y]:
+                        grass_name += ' on a sunny glade'
 
                     self.owner.tiles[x][y].char = Char(char=grass_char_symbol, color=grass_char_color, name=grass_name)
 

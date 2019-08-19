@@ -54,6 +54,8 @@ class EnterAction(Action):
                         self.engine.fov_map = initialize_fov(dungeon_map)
                         self.engine.fov_recompute = True
                         self.engine.renderer.clear()
+
+                        self.engine.player_turn_results.append({'exit_location': True})
                         return True
                     elif entity.stairs and entity.stairs.direction == StairsDirections.WORLD:
                         return False # implement

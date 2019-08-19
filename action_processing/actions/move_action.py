@@ -1,6 +1,7 @@
 from action_processing.actions.action import Action
 from game_states import GameStates
 from player_locations import PlayerLocations
+from map_objects.world.biomes import Biomes
 
 
 class MoveAction(Action):
@@ -41,3 +42,8 @@ class MoveAction(Action):
                     self.engine.fov_recompute = True
 
                 self.engine.game_state = GameStates.ENEMY_TURN
+            elif game_map.is_void(destination_x, destination_y):
+                biom = self.engine.world_map.current_biom()
+                if biom == Biomes.FOREST:
+                    self.engine.player_location = PlayerLocations.WORLD_MAP
+                    self.engine.player_turn_results.append({'exit_location': True})

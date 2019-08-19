@@ -28,7 +28,7 @@ class Dungeon(MapComponent):
         rooms = []
         num_rooms = 0
 
-        for r in range(self.max_rooms):
+        for _ in range(self.max_rooms):
             # random width and height
             w = randint(self.room_min_size, self.room_max_size)
             h = randint(self.room_min_size, self.room_max_size)
@@ -119,7 +119,7 @@ class Dungeon(MapComponent):
             'confuse_scroll': from_dungeon_level([[10, 2]], self.owner.dungeon_level),
         }
 
-        for i in range(number_of_monsters):
+        for _ in range(number_of_monsters):
             # Choose a random location in room
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
@@ -132,7 +132,7 @@ class Dungeon(MapComponent):
 
                 entities.append(monster)
 
-        for i in range(number_of_items):
+        for _ in range(number_of_items):
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
 

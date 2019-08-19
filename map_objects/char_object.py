@@ -7,6 +7,6 @@ class Char:
         self.name = name
 
         self.color = color
-        self.shadow_color = color_vars.mutated_color(color, 0.3)
-        self.distant_color = color_vars.mutated_color(color, 0.4)
-        self.distant_shadow_color = color_vars.mutated_color(color, 0.6)
+        self.shadow_color = color_vars.mutated_color(color, 0.4)
+        self.distant_color = color_vars.mutated_color(color, 0.5)
+        self.distant_shadow_color = color_vars.mutated_color(color, 0.8)
