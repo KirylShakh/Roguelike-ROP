@@ -1,6 +1,6 @@
 from action_processing.actions.action import Action
 from game_states import GameStates
-from game_vars import item_vars, color_vars
+from game_vars import color_vars
 from game_messages import Message
 from action_processing.animations.explosion_animation import ExplosionAnimation
 
@@ -28,8 +28,8 @@ class LeftClickAction(Action):
         if not self.engine.fov_map.fov[target_x][target_y]:
             self.engine.player_turn_results.append({'message': Message('You cannot target a tile outside your field of view', color_vars.warning)})
         else:
-            radius = item_vars.fireball_scroll_radius
-            damage = item_vars.fireball_scroll_damage
+            radius = 3
+            damage = 25
 
             self.engine.player_turn_results.append({'consumed': True, 'message': Message('The fireball explodes, burning everything within {0} tiles'.format(radius), color_vars.spell)})
 

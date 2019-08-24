@@ -1,5 +1,5 @@
 from components.component import Component
 
 
-class MapComponent(Component):
+class BiomMap(Component):
     pass

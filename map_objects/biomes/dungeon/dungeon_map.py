@@ -2,19 +2,18 @@ from random import randint
 
 import tcod
 
-from map_objects.map_components.map_component import MapComponent
+from map_objects.biomes.biom_map import BiomMap
+from map_objects.biomes.dungeon.flora import Flora
+from map_objects.biomes.dungeon.fauna import Fauna
+from map_objects.biomes.dungeon.loot import Loot
 from map_objects.rectangle import Rect
-from random_utils import random_choice_from_dict, from_dungeon_level
 from entity_objects.entity import Entity
 from components.stairs import Stairs, StairsDirections
 from render_objects.render_order import RenderOrder
 from game_vars import color_vars
 
-import entity_objects.creators.npc_creator as npc_creator
-import entity_objects.creators.item_creator as item_creator
 
-
-class Dungeon(MapComponent):
+class DungeonMap(BiomMap):
     def __init__(self, max_rooms, room_min_size, room_max_size):
         self.max_rooms = max_rooms
         self.room_min_size = room_min_size
@@ -23,6 +22,10 @@ class Dungeon(MapComponent):
         self.default_tile_blocked = True
 
         self.fov_radius = 10
+
+        self.flora = Flora()
+        self.fauna = Fauna()
+        self.loot = Loot()
 
     def make_map(self, entities, moving_down=True):
         rooms = []
@@ -63,7 +66,10 @@ class Dungeon(MapComponent):
                         self.create_v_tunnel(prev_y, new_y, prev_x)
                         self.create_h_tunnel(prev_x, new_x, new_y)
 
-                self.place_entities(new_room, entities)
+                self.fauna.populate_room(new_room, self.owner.dungeon_level, entities)
+                self.loot.fill_room(new_room, self.owner.dungeon_level, entities)
+                self.flora.grow_fungi(self.owner, new_room)
+
                 rooms.append(new_room)
                 num_rooms += 1
 
@@ -99,60 +105,6 @@ class Dungeon(MapComponent):
                             stairs=up_stairs_component)
         entities.append(up_stairs)
 
-    def place_entities(self, room, entities):
-        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 4], [5, 6]], self.owner.dungeon_level)
-        max_items_per_room = from_dungeon_level([[1, 1], [2, 4]], self.owner.dungeon_level)
-
-        number_of_monsters = randint(0, max_monsters_per_room)
-        number_of_items = randint(0, max_items_per_room)
-
-        monster_chances = {
-            'orc': 80,
-            'troll': from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.owner.dungeon_level),
-        }
-        item_chances = {
-            'healing_potion': 35,
-            'sword': from_dungeon_level([[5, 4]], self.owner.dungeon_level),
-            'shield': from_dungeon_level([[15, 8]], self.owner.dungeon_level),
-            'lightning_scroll': from_dungeon_level([[25, 4]], self.owner.dungeon_level),
-            'fireball_scroll': from_dungeon_level([[25, 6]], self.owner.dungeon_level),
-            'confuse_scroll': from_dungeon_level([[10, 2]], self.owner.dungeon_level),
-        }
-
-        for _ in range(number_of_monsters):
-            # Choose a random location in room
-            x = randint(room.x1 + 1, room.x2 - 1)
-            y = randint(room.y1 + 1, room.y2 - 1)
-            if not entities.find_by_point(x, y):
-                monster_choice = random_choice_from_dict(monster_chances)
-                if monster_choice == 'orc':
-                    monster = npc_creator.create_orc(x, y)
-                elif monster_choice == 'troll':
-                    monster = npc_creator.create_troll(x, y)
-
-                entities.append(monster)
-
-        for _ in range(number_of_items):
-            x = randint(room.x1 + 1, room.x2 - 1)
-            y = randint(room.y1 + 1, room.y2 - 1)
-
-            if not entities.find_by_point(x, y):
-                item_choice = random_choice_from_dict(item_chances)
-
-                if item_choice == 'healing_potion':
-                    item = item_creator.create_healing_potion(x, y)
-                elif item_choice == 'sword':
-                    item = item_creator.create_sword(x, y)
-                elif item_choice == 'shield':
-                    item = item_creator.create_shield(x, y)
-                elif item_choice == 'fireball_scroll':
-                    item = item_creator.create_fireball_scroll(x, y)
-                elif item_choice == 'confuse_scroll':
-                    item = item_creator.create_confuse_scroll(x, y)
-                elif item_choice == 'lightning_scroll':
-                    item = item_creator.create_lightning_scroll(x, y)
-                entities.append(item)
-
     def create_room(self, room):
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
@@ -170,12 +122,17 @@ class Dungeon(MapComponent):
     def tile_render_info(self, x, y, visible):
         tile = self.owner.tiles[x][y]
         color = None
+        fg_color = None
+        char = None
 
         if visible:
             if tile.blocked:
                 color = color_vars.light_wall
             else:
                 color = color_vars.light_ground
+                if tile.char:
+                    fg_color = tile.char.color
+                    char = tile.char.char
 
             tile.explored = True
         elif tile.explored:
@@ -183,5 +140,8 @@ class Dungeon(MapComponent):
                 color = color_vars.dark_wall
             else:
                 color = color_vars.dark_ground
+                if tile.char:
+                    fg_color = tile.char.distant_color
+                    char = tile.char.char
 
-        return (color, None, None)
+        return (color, char, fg_color)

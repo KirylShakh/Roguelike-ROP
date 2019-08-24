@@ -2,8 +2,8 @@ from action_processing.actions.action import Action
 from game_states import GameStates
 from player_locations import PlayerLocations
 from map_objects.game_map import GameMap
-from map_objects.map_components.dungeon import Dungeon
-from map_objects.map_components.forest import Forest
+from map_objects.biomes.dungeon.dungeon_map import DungeonMap
+from map_objects.biomes.forest.forest_map import ForestMap
 from map_objects.world.biomes import Biomes
 from game_vars import map_vars, room_vars, color_vars
 from game_messages import Message
@@ -23,10 +23,10 @@ class EnterAction(Action):
             player = self.engine.entities.player
             tile = self.engine.world_map.tiles[player.x][player.y]
             if tile.biom == Biomes.DUNGEON:
-                map_creator = Dungeon(room_vars.max_num, room_vars.min_size, room_vars.max_size)
+                map_creator = DungeonMap(room_vars.max_num, room_vars.min_size, room_vars.max_size)
                 return self.enter_location(map_creator)
             elif tile.biom == Biomes.FOREST:
-                map_creator = Forest(5)
+                map_creator = ForestMap(5)
                 return self.enter_location(map_creator)
             else:
                 self.engine.message_log.add_message(Message('There is nowhere to enter here', color_vars.warning))

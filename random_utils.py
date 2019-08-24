@@ -23,3 +23,13 @@ def from_dungeon_level(table, dungeon_level):
         if dungeon_level >= level:
             return value
     return 0
+
+def weight_factor(d, dungeon_level=1):
+    weights = {}
+    for k, v in d.items():
+        if isinstance(v['weight_factor'], list):
+            weights[k] = from_dungeon_level(v['weight_factor'], dungeon_level)
+        else:
+            weights[k] = v['weight_factor']
+
+    return weights

@@ -1,19 +1,25 @@
 import tcod
 
-from game_vars import map_vars, room_vars, message_vars
+from game_vars import map_vars, room_vars, message_vars, player_vars, color_vars
 from entity_objects.map_entities import MapEntities
 from game_messages import MessageLog
 from game_states import GameStates
 from map_objects.world.world_map import WorldMap
-from entity_objects.creators.player_creator import create_player
-from entity_objects.creators.item_creator import create_dagger
+from map_objects.biomes.dungeon.loot import Loot
+
+from entity_objects.entity import Entity
+from components.fighter import Fighter
+from components.inventory import Inventory
+from components.level import Level
+from components.equipment import Equipment
+from render_objects.render_order import RenderOrder
 
 
 def get_game_variables():
     player = create_player()
     entities = MapEntities(player)
 
-    dagger = create_dagger()
+    dagger = Loot().get_item(0, 0, 'dagger')
     player.inventory.add_item(dagger)
     player.equipment.toggle_equip(dagger)
 
@@ -25,3 +31,14 @@ def get_game_variables():
     game_state = GameStates.PLAYERS_TURN
 
     return entities, world_map, message_log, game_state
+
+def create_player():
+    fighter_component = Fighter(hp=player_vars.hp, defense=player_vars.defense,
+                                power=player_vars.power)
+    inventory_component = Inventory(player_vars.inventory_size)
+    level_component = Level()
+    equipment_component = Equipment()
+    return Entity(0, 0, player_vars.char, color_vars.player, player_vars.name, blocks=True,
+                    render_order=RenderOrder.ACTOR, fighter=fighter_component,
+                    inventory=inventory_component, level=level_component,
+                    equipment=equipment_component)
