@@ -14,6 +14,14 @@ class GameMap:
         self.map_creator.own(self)
         self.dungeon_level = dungeon_level
 
+        if map_creator and map_creator.landmark:
+            self.name = map_creator.landmark.name
+        else:
+            self.name = ''
+
+        self.visited = False
+        self.entities = None
+
     def initialize_tiles(self):
         return [[Tile(self.map_creator.default_tile_blocked) for y in range(self.height)] for x in range(self.width)]
 
@@ -24,8 +32,18 @@ class GameMap:
         return False
 
     def make_map(self, entities, moving_down=True):
+        if self.visited:
+            for entity in self.entities:
+                if entity != entities.player:
+                    entities.append(entity)
+            self.map_creator.place_player(entities.player)
+            return
+
         self.tiles = self.initialize_tiles()
         self.map_creator.make_map(entities, moving_down)
+
+    def store_entities(self, entities):
+        self.entities = entities.all.copy()
 
     def next_floor(self, player, message_log):
         self.dungeon_level += 1

@@ -26,6 +26,8 @@ def handle(event, game_state):
         return handle_level_up_menu(event)
     elif game_state == GameStates.CHARACTER_SCREEN:
         return handle_character_screen(event)
+    elif game_state == GameStates.SHOW_LOCATIONS:
+        return handle_show_locations(event)
 
     return {}
 
@@ -66,6 +68,8 @@ def handle_player_turn(event):
             return {'take_stairs_down': True}
         elif event.sym == tcod.event.K_COMMA and (tcod.event.KMOD_LSHIFT or tcod.event.KMOD_RSHIFT):
             return {'take_stairs_up': True}
+        elif event.sym == tcod.event.K_SLASH and (tcod.event.KMOD_LSHIFT or tcod.event.KMOD_RSHIFT):
+            return {'explore': True}
 
         if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
             return {'fullscreen': True}
@@ -133,4 +137,18 @@ def handle_character_screen(event):
     if event.type == 'KEYDOWN':
         if event.sym == tcod.event.K_ESCAPE:
             return {'exit': True}
+    return {}
+
+def handle_show_locations(event):
+    if event.type == 'KEYDOWN':
+        index = event.sym - ord('a')
+        if index >= 0:
+            return {'location_index': index}
+
+        if event.sym == tcod.event.K_ESCAPE:
+            return {'exit': True}
+
+        if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
+            return {'fullscreen': True}
+
     return {}

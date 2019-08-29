@@ -89,3 +89,18 @@ def character_screen(player, character_screen_width, character_screen_height, re
     x = renderer.screen_width // 2 - character_screen_width // 2
     y = renderer.screen_height // 2 - character_screen_height // 2
     window.blit(renderer.root, x, y, 0, 0, character_screen_width, character_screen_height, 1.0, 0.7)
+
+def locations_menu(header, menu_width, locations, renderer):
+    # show a menu with each location as an entry point
+    if len(locations) == 0:
+        options = ['There is nothing notably here']
+    else:
+        options = []
+
+        for location in locations:
+            if not location.visited:
+                options.append(location.name)
+            else:
+                options.append('{0} (visited)'.format(location.name))
+
+    menu(header, options, menu_width, renderer)

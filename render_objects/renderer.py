@@ -2,7 +2,7 @@ import tcod
 
 from game_vars import color_vars, screen_vars, panel_vars, menu_vars
 from game_states import GameStates
-from menus import inventory_menu, level_up_menu, character_screen
+from menus import inventory_menu, level_up_menu, character_screen, locations_menu
 from player_locations import PlayerLocations
 
 
@@ -62,7 +62,7 @@ class Renderer:
         self.panel.clear()
         self.render_hud(entities.player, None, message_log, whats_under_mouse)
 
-        self.render_menus(entities.player, game_state)
+        self.render_menus(entities.player, game_state, world_map=world_map)
 
     def render_dungeon(self, entities, game_map, fov_map, fov_recompute,
                     message_log, entities_under_mouse, game_state):
@@ -110,7 +110,7 @@ class Renderer:
 
         self.panel.blit(self.root, 0, panel_vars.y, 0, 0, self.screen_width, panel_vars.height)
 
-    def render_menus(self, player, game_state):
+    def render_menus(self, player, game_state, world_map=None):
         if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
             if game_state == GameStates.SHOW_INVENTORY:
                 inventory_title = menu_vars.inventory_show_title
@@ -123,6 +123,10 @@ class Renderer:
         elif game_state == GameStates.CHARACTER_SCREEN:
             character_screen(player, menu_vars.character_screen_width,
                     menu_vars.character_screen_height, self)
+        elif game_state == GameStates.SHOW_LOCATIONS:
+            header = 'Available locations'
+            tile = world_map.tiles[player.x][player.y]
+            locations_menu(header, menu_vars.location_list_width, tile.locations, self)
 
     def clear_all(self, entities):
         for entity in entities.all:

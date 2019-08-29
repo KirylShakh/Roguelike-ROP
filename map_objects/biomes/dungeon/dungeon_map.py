@@ -14,14 +14,16 @@ from game_vars import color_vars
 
 
 class DungeonMap(BiomMap):
-    def __init__(self, max_rooms, room_min_size, room_max_size):
+    def __init__(self, max_rooms, room_min_size, room_max_size, landmark=None):
         self.max_rooms = max_rooms
         self.room_min_size = room_min_size
         self.room_max_size = room_max_size
+        self.landmark = landmark
 
         self.default_tile_blocked = True
-
         self.fov_radius = 10
+
+        self.player_start = None
 
         self.flora = Flora()
         self.fauna = Fauna()
@@ -49,8 +51,8 @@ class DungeonMap(BiomMap):
                 (new_x, new_y) = new_room.center()
 
                 if num_rooms == 0:
-                    entities.player.x = new_x
-                    entities.player.y = new_y
+                    self.player_start = (new_x, new_y)
+                    self.place_player(entities.player)
                 else:
                     # all rooms after the first:
                     # connect it to the previous room with a tunnel
@@ -104,6 +106,9 @@ class DungeonMap(BiomMap):
                             stairs_name, render_order=RenderOrder.STAIRS,
                             stairs=up_stairs_component)
         entities.append(up_stairs)
+
+    def place_player(self, player):
+        player.x, player.y = self.player_start
 
     def create_room(self, room):
         for x in range(room.x1 + 1, room.x2):

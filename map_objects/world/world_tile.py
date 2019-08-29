@@ -6,6 +6,7 @@ class WorldTile:
         self.biom = biom
         self.explored = False
         self.visited = False
+        self.locations = None
 
         self.char = char
         self.color = color

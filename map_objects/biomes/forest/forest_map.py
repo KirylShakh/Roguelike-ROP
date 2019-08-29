@@ -11,9 +11,10 @@ from map_objects.biomes.forest.fauna import Fauna
 
 
 class ForestMap(BiomMap):
-    def __init__(self, average_tree_diameter):
+    def __init__(self, average_tree_diameter, landmark=None):
         self.fov_radius = 20
 
+        self.landmark = landmark
         self.average_tree_diameter = average_tree_diameter
         self.flora = Flora(self.average_tree_diameter)
         self.fauna = Fauna()
@@ -28,7 +29,10 @@ class ForestMap(BiomMap):
         self.place_grass()
         self.fauna.populate(self.owner, entities)
 
-        entities.player.x, entities.player.y = self.find_empty_spot()
+        self.place_player(entities.player)
+
+    def place_player(self, player):
+        player.x, player.y = self.find_empty_spot()
 
     def find_empty_spot(self):
         center_x = int(self.owner.width / 2)
@@ -163,9 +167,6 @@ class ForestMap(BiomMap):
             for y in range(self.owner.height):
                 if not self.owner.is_blocked(x, y):
                     self.owner.tiles[x][y].char = self.flora.get_tile_plant(self.shadowed_tiles[x][y])
-
-    def place_entities(self, entities):
-        pass
 
     # (bg_color, char, char_color)
     def tile_render_info(self, x, y, visible):

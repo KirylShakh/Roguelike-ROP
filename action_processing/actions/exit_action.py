@@ -39,6 +39,7 @@ class ExitAction(Action):
                         elif entity.stairs and entity.stairs.direction == StairsDirections.WORLD:
                             self.engine.player_location = PlayerLocations.WORLD_MAP
                             self.engine.player_turn_results.append({'exit_location': True})
+                            self.engine.world_map.current_dungeon.store_entities(self.engine.entities)
                             return True
                 else:
                     self.engine.message_log.add_message(Message('There are no up stairs here', color_vars.warning))

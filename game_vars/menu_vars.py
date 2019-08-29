@@ -9,3 +9,5 @@ level_up_width = 40
 
 character_screen_width = 30
 character_screen_height = 10
+
+location_list_width = 60

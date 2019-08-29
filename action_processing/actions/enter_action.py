@@ -12,8 +12,10 @@ from components.stairs import StairsDirections
 
 
 class EnterAction(Action):
-    def run(self):
-        if self.engine.player_location == PlayerLocations.WORLD_MAP:
+    def run(self, location_index=None):
+        if self.engine.player_location == PlayerLocations.WORLD_MAP and location_index is not None:
+            return self.enter_location(location_index)
+        elif self.engine.player_location == PlayerLocations.WORLD_MAP:
             return self.enter_world_tile()
         elif self.engine.player_location == PlayerLocations.DUNGEON:
             return self.enter_next_floor()
@@ -24,15 +26,27 @@ class EnterAction(Action):
             tile = self.engine.world_map.tiles[player.x][player.y]
             if tile.biom == Biomes.DUNGEON:
                 map_creator = DungeonMap(room_vars.max_num, room_vars.min_size, room_vars.max_size)
-                return self.enter_location(map_creator)
+                return self.enter_nameless_location(map_creator)
             elif tile.biom == Biomes.FOREST:
                 map_creator = ForestMap(5)
-                return self.enter_location(map_creator)
+                return self.enter_nameless_location(map_creator)
             else:
                 self.engine.message_log.add_message(Message('There is nowhere to enter here', color_vars.warning))
         return False
 
-    def enter_location(self, map_creator):
+    def enter_location(self, location_index):
+        player = self.engine.entities.player
+        self.engine.world_map.current_dungeon_entry_point = (player.x, player.y)
+
+        game_map = self.engine.world_map.tiles[player.x][player.y].locations[location_index]
+        game_map.make_map(self.engine.entities)
+        self.engine.world_map.current_dungeon = game_map
+        self.engine.game_state = GameStates.PLAYERS_TURN
+
+        self.engine.renderer.clear()
+        return self.engine.enter_dungeon()
+
+    def enter_nameless_location(self, map_creator):
         player = self.engine.entities.player
         self.engine.world_map.current_dungeon_entry_point = (player.x, player.y)
 

@@ -47,3 +47,4 @@ class MoveAction(Action):
                 if biom == Biomes.FOREST:
                     self.engine.player_location = PlayerLocations.WORLD_MAP
                     self.engine.player_turn_results.append({'exit_location': True})
+                    self.engine.world_map.current_dungeon.store_entities(self.engine.entities)

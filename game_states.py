@@ -10,3 +10,4 @@ class GameStates(Enum):
     LEVEL_UP = auto()
     CHARACTER_SCREEN = auto()
     ANIMATING = auto()
+    SHOW_LOCATIONS = auto()

@@ -19,4 +19,4 @@ class MouseoverAction(Action):
                 if tile.explored and tile.char and tile.char.name:
                     tile_contents.append(tile.char.name)
 
-            return ', '.join(tile_contents).capitalize()
+            return ', '.join(tile_contents)

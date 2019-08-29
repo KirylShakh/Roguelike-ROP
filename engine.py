@@ -15,6 +15,7 @@ from action_processing.actions.animate_action import AnimateAction
 from action_processing.actions.quit_action import QuitAction
 from action_processing.actions.enter_action import EnterAction
 from action_processing.actions.exit_action import ExitAction
+from action_processing.actions.explore_action import ExploreAction
 from action_processing.actions.fullscreen_action import FullscreenAction
 from action_processing.actions.info_screen_action import InfoScreenAction
 from action_processing.actions.inventory_index_action import InventoryIndexAction
@@ -164,6 +165,19 @@ class Engine:
                     else:
                         break
 
+                if processed_event.get('explore'):
+                    action = ExploreAction(self)
+                    if action.run():
+                        action = InfoScreenAction(self)
+                        action.run(GameStates.SHOW_LOCATIONS)
+
+                if processed_event.get('location_index') is not None:
+                    action = EnterAction(self)
+                    if action.run(processed_event.get('location_index')):
+                        return True
+                    else:
+                        break
+
                 if processed_event.get('fullscreen'):
                     action = FullscreenAction(self)
                     action.run()
@@ -172,12 +186,22 @@ class Engine:
                     action = MouseoverAction(self)
                     self.whats_under_mouse = action.run(processed_event.get('mouseover'))
 
+                for player_turn_result in self.player_turn_results:
+                    if player_turn_result.get('message'):
+                        result = MessageResult(self)
+                        result.run(player_turn_result.get('message'))
+
+                    if player_turn_result.get('equip'):
+                        result = EquipResult(self)
+                        result.run(player_turn_result.get('equip'))
+
                 if self.game_state == GameStates.ENEMY_TURN:
                     action = WorldAction(self)
                     action.run()
 
     def enter_dungeon(self):
         game_map = self.world_map.current_dungeon
+        game_map.visited = True
 
         self.fov_recompute = True
         self.fov_map = initialize_fov(game_map)
