@@ -24,10 +24,12 @@ class ForestMap(BiomMap):
         self.shadowed_tiles = [[]]
 
     def make_map(self, entities, moving_down=True):
+        if self.landmark:
+            self.place_landmark()
         self.place_trees()
         self.calculate_crowns()
         self.place_grass()
-        self.fauna.populate(self.owner, entities)
+        self.place_entities(entities)
 
         self.place_player(entities.player)
 
@@ -66,6 +68,13 @@ class ForestMap(BiomMap):
 
         return None
 
+    def place_landmark(self):
+        self.landmark.create_on(self.owner)
+
+    def place_entities(self, entities):
+        # self.fauna.populate(self.owner, entities)
+        pass
+
     def place_trees(self):
         density = self.owner.width * self.owner.height // (self.average_tree_diameter * 2)
 
@@ -79,6 +88,8 @@ class ForestMap(BiomMap):
             y = randint(0, self.owner.height - new_tree.diameter - 1)
 
             square_trunk = Rect(x, y, new_tree.diameter, new_tree.diameter)
+            if self.landmark and self.landmark.rect.intersect_with_additional_space(square_trunk):
+                continue
             for tree in self.trees:
                 if square_trunk.intersect(tree.trunk):
                     break
@@ -165,7 +176,7 @@ class ForestMap(BiomMap):
     def place_grass(self):
         for x in range(self.owner.width):
             for y in range(self.owner.height):
-                if not self.owner.is_blocked(x, y):
+                if not self.owner.is_blocked(x, y) and not self.owner.tiles[x][y].char:
                     self.owner.tiles[x][y].char = self.flora.get_tile_plant(self.shadowed_tiles[x][y])
 
     # (bg_color, char, char_color)
@@ -176,7 +187,11 @@ class ForestMap(BiomMap):
 
         if visible:
             if self.owner.is_blocked(x, y):
-                bg_color = self.owner.tiles[x][y].char.color
+                if self.owner.tiles[x][y].char.char:
+                    char_obj = self.owner.tiles[x][y].char
+                    char, char_color = (char_obj.char, char_obj.shadow_color)
+                else:
+                    bg_color = self.owner.tiles[x][y].char.color
             else:
                 char_obj = self.owner.tiles[x][y].char
 
@@ -188,7 +203,11 @@ class ForestMap(BiomMap):
             self.owner.tiles[x][y].explored = True
         elif self.owner.tiles[x][y].explored:
             if self.owner.is_blocked(x, y):
-                bg_color = self.owner.tiles[x][y].char.distant_color
+                if self.owner.tiles[x][y].char.char:
+                    char_obj = self.owner.tiles[x][y].char
+                    char, char_color = (char_obj.char, char_obj.distant_shadow_color)
+                else:
+                    bg_color = self.owner.tiles[x][y].char.distant_color
             else:
                 char_obj = self.owner.tiles[x][y].char
 

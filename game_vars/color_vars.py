@@ -19,6 +19,7 @@ warning = tcod.yellow
 spell = tcod.orange
 
 soil = tcod.black
+wood = tcod.Color(128, 64, 0)
 
 def mutated_color(color, mult=0.5):
     return tcod.Color(

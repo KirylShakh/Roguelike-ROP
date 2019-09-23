@@ -38,6 +38,9 @@ class EnterAction(Action):
         player = self.engine.entities.player
         self.engine.world_map.current_dungeon_entry_point = (player.x, player.y)
 
+        locations = self.engine.world_map.tiles[player.x][player.y].locations
+        if location_index < 0 or location_index >= len(locations):
+            return False
         game_map = self.engine.world_map.tiles[player.x][player.y].locations[location_index]
         game_map.make_map(self.engine.entities)
         self.engine.world_map.current_dungeon = game_map
