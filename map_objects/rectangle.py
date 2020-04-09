@@ -27,6 +27,19 @@ class Rect:
         return (self.x1 - space <= other.x2 and self.x2 + space >= other.x1 and
                 self.y1 - space <= other.y2 and self.y2 + space >= other.y1)
 
+    def belongs(self, x, y):
+        return x >= self.x1 and x < self.x2 and y >= self.y1 and y < self.y2
+
+    def opposite_direction(self, direction):
+        if direction == 'west':
+            return 'east'
+        if direction == 'east':
+            return 'west'
+        if direction == 'north':
+            return 'south'
+        if direction == 'south':
+            return 'north'
+
     def random_inside_tile(self, direction=None):
         width = self.w - 2
         height = self.h - 2

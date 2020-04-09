@@ -5,13 +5,13 @@ from map_objects.char_object import Char
 
 
 class Chapel(Shed):
-    def __init__(self, name):
-        super(Chapel, self).__init__(name)
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent=parent)
 
         self.altar_char = Char(char=tcod.CHAR_RADIO_UNSET, color=tcod.grey, name='Altar of {0}'.format(name))
 
     def make_objects(self):
-        super(Chapel, self).make_objects()
+        super().make_objects()
         self.make_altar()
 
     def make_windows(self):
@@ -25,7 +25,7 @@ class Chapel(Shed):
         self.altar = [self.rect.random_inside_tile(direction=self.door_side_direction)]
 
     def place(self, game_map):
-        super(Chapel, self).place(game_map)
+        super().place(game_map)
 
         for (x, y) in self.altar:
             game_map.tiles[x][y].block()

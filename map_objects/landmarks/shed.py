@@ -6,16 +6,22 @@ from game_vars import color_vars
 
 
 class Shed(Landmark):
-    def __init__(self, name):
-        super(Shed, self).__init__(name)
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent=parent)
 
         self.wall_char = Char(color=tcod.darkest_grey, name=name)
         self.door_char = Char(char='/', color=tcod.lightest_grey, name='Door to {0}'.format(name))
         self.window_char = Char(char=tcod.CHAR_BLOCK1, color=tcod.lightest_grey, name='Window to {0}'.format(name))
         self.floor_char = Char(char='.', color=tcod.darker_gray, name='Floor of {0}'.format(name))
 
+    def init_constants(self):
+        super().init_constants()
+
+        self.minimal_map_edge_offset = 2
+
     def create_on(self, game_map):
-        self.rect = self.make_rect(game_map.width, game_map.height)
+        super().create_on(game_map)
+
         self.make_objects()
         self.place(game_map)
 
@@ -55,3 +61,4 @@ class Shed(Landmark):
             for y in range(self.rect.y1 + 1, self.rect.y2 - 1):
                 if not game_map.tiles[x][y].char:
                     game_map.tiles[x][y].char = self.floor_char
+                    game_map.tiles[x][y].indoor = True

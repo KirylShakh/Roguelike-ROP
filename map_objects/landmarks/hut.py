@@ -6,14 +6,14 @@ from game_vars import color_vars
 
 
 class Hut(Shed):
-    def __init__(self, name):
-        super(Hut, self).__init__(name)
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent=parent)
 
         self.bed_char = Char(char='-', color=color_vars.wood, name='Bed in {0}'.format(name))
         self.table_char = Char(char='=', color=color_vars.wood, name='Table in {0}'.format(name))
 
     def make_objects(self):
-        super(Hut, self).make_objects()
+        super().make_objects()
         self.make_furniture()
 
     def make_windows(self):
@@ -36,7 +36,7 @@ class Hut(Shed):
         self.furniture = [(bed_x, bed_y, self.bed_char), (table_x, table_y, self.table_char)]
 
     def place(self, game_map):
-        super(Hut, self).place(game_map)
+        super().place(game_map)
 
         for (x, y, char) in self.furniture:
             game_map.tiles[x][y].blocked = False

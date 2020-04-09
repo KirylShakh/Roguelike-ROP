@@ -20,6 +20,7 @@ spell = tcod.orange
 
 soil = tcod.black
 wood = tcod.Color(128, 64, 0)
+dirt_road = tcod.Color(145, 90, 36)
 
 def mutated_color(color, mult=0.5):
     return tcod.Color(

@@ -10,6 +10,7 @@ from map_objects.landmarks.shrine import Shrine
 from map_objects.landmarks.shed import Shed
 from map_objects.landmarks.hut import Hut
 from map_objects.landmarks.house import House
+from map_objects.landmarks.housestead import Housestead
 
 
 class ForestLocations:
@@ -17,8 +18,8 @@ class ForestLocations:
         self.locations = {
             'temple': {
                 'names': [
-                    'Nisswor',
-                    'Shodech',
+                    'Nisswor', # Goddess
+                    'Shodech', # God
                     'Ceisess', # Goddess of Pain, Suffering, Endurance, mother of Veshris
                     'Enransul', # God of Pride, Priviledge, War, father of Veshris
                     'Veshris', # God of Solitude, Piece, Rot, son of Enransul
@@ -64,6 +65,7 @@ class ForestLocations:
                 ],
                 'weight_factor': 15,
                 'types': {
+                    'hut': 10,
                     'housestead': 30,
                     'hamlet': 20,
                     'village': 10,
@@ -86,9 +88,15 @@ class ForestLocations:
         return location
 
     def generate_landmark(self, name, location_choice, location_type):
-        if location_choice == 'temple' and location_type == 'Shrine':
-            return Shrine(name)
-        elif location_choice == 'temple' and location_type == 'Chapel':
-            return Chapel(name)
+        if location_choice == 'temple':
+            if location_type == 'Shrine':
+                return Shrine(name)
+            elif location_type == 'Chapel':
+                return Chapel(name)
+        elif location_choice == 'settlement':
+            if location_type == 'hut':
+                return Hut(name)
+            elif location_type == 'housestead':
+                return Housestead(name)
 
-        return House(name)
+        return Housestead(name)

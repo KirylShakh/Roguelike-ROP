@@ -37,16 +37,6 @@ class Room(Rect):
             return 'south'
         return None
 
-    def opposite_direction(self, direction):
-        if direction == 'west':
-            return 'east'
-        if direction == 'east':
-            return 'west'
-        if direction == 'north':
-            return 'south'
-        if direction == 'south':
-            return 'north'
-
     def make_door_with(self, other_room):
         direction, door = self.random_intersection_side_tile(other_room)
 

@@ -6,20 +6,23 @@ from game_vars import color_vars
 
 
 class Shrine(Chapel):
-    def __init__(self, name):
-        super(Shrine, self).__init__(name)
-
-        self.min_width = 8
-        self.max_width = 14
-
-        self.min_height = 8
-        self.max_height = 14
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent=parent)
 
         self.vertical_bench_char = Char(char='|', color=color_vars.wood, name='Small bench')
         self.horizontal_bench_char = Char(char='-', color=color_vars.wood, name='Small bench')
 
+    def init_constants(self):
+        super().init_constants()
+
+        self.min_width = 6
+        self.max_width = 12
+
+        self.min_height = 6
+        self.max_height = 12
+
     def make_objects(self):
-        super(Shrine, self).make_objects()
+        super().make_objects()
         self.make_benches()
 
     def make_door(self):
@@ -105,7 +108,7 @@ class Shrine(Chapel):
         self.benches = (bench_char, [(x, y) for x in xs for y in ys])
 
     def place(self, game_map):
-        super(Shrine, self).place(game_map)
+        super().place(game_map)
 
         bench_char, bench_tiles = self.benches
         for (x, y) in bench_tiles:

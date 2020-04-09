@@ -10,8 +10,14 @@ from game_vars import color_vars
 
 
 class House(Hut):
-    def __init__(self, name):
-        super(House, self).__init__(name)
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent=parent)
+
+        self.chair_char = Char(char='_', color=color_vars.wood, name='Stool in {0}'.format(name))
+        self.bag_char = Char(char='&', color=color_vars.wood, name='Bag in {0}'.format(name))
+
+    def init_constants(self):
+        super().init_constants()
 
         self.min_width = 6
         self.max_width = 12
@@ -19,11 +25,8 @@ class House(Hut):
         self.min_height = 6
         self.max_height = 12
 
-        self.chair_char = Char(char='_', color=color_vars.wood, name='Stool in {0}'.format(name))
-        self.bag_char = Char(char='&', color=color_vars.wood, name='Bag in {0}'.format(name))
-
     def make_walls(self):
-        super(House, self).make_walls()
+        super().make_walls()
 
         self.rooms = [Room(self.rect.x1, self.rect.y1, self.rect.w, self.rect.h)]
         room_number = round(math.sqrt(self.rect.w * self.rect.h) / 3)
@@ -62,12 +65,7 @@ class House(Hut):
         return self.rooms.pop(index)
 
     def make_door(self):
-        super(House, self).make_door()
-
-        print('\n')
-        print(self.rect)
-        for room in self.rooms:
-            print('Room: {0}'.format(room))
+        super().make_door()
 
         self.inner_doors = []
         entrance_room = self.entrance_room()
@@ -81,7 +79,6 @@ class House(Hut):
 
             entrance_room = self.entrance_room()
 
-        print('Entrance room: {0}'.format(entrance_room))
         self.handle_room(entrance_room)
 
     def entrance_room(self):
@@ -97,9 +94,8 @@ class House(Hut):
                 if not room.inner_doors:
                     new_door = next_room.make_door_with(room)
                     self.inner_doors.append(new_door)
-                    print('Door added {0} to {1}'.format(new_door, next_room))
 
-                    # gives a 33% chance for a room to have multiple inner doors to adjancent rooms
+                    # gives a 33% chance for a room to have multiple inner doors to adjancent rooms (66% chance?)
                     if randint(0, 2) == 0:
                         self.handle_room(room)
                     else:
@@ -141,7 +137,7 @@ class House(Hut):
             room.type = room_type
 
     def place(self, game_map):
-        super(House, self).place(game_map)
+        super().place(game_map)
 
         for (x, y) in self.inner_doors:
             game_map.tiles[x][y].unblock()

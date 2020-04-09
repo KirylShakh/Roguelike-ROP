@@ -7,6 +7,8 @@ class Tile:
         self.block_sight = block_sight
 
         self.explored = False
+        self.indoor = False
+        self.cultivated = False
 
         self.char = None
 
