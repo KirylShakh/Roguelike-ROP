@@ -15,7 +15,14 @@ monsters = {
     'orc': {
         'name': 'Orc',
         'char': 'o',
-        'hp': 20,
+        'attributes': {
+            'strength': 17,
+            'dexterity': 12,
+            'constitution': 16,
+            'intelligence': 8,
+            'wisdom': 7,
+            'charisma': 8,
+        },
         'power': 4,
         'defense': 0,
         'xp': 35,
@@ -25,7 +32,14 @@ monsters = {
     'troll': {
         'name': 'Troll',
         'char': 'T',
-        'hp': 30,
+        'attributes': {
+            'strength': 22,
+            'dexterity': 8,
+            'constitution': 20,
+            'intelligence': 5,
+            'wisdom': 6,
+            'charisma': 8,
+        },
         'power': 8,
         'defense': 2,
         'xp': 100,
@@ -51,8 +65,9 @@ class Fauna:
 
     def get_monster(self, x, y, monster_choice):
         monster = monsters[monster_choice]
-        fighter_component = Fighter(hp=monster['hp'], defense=monster['defense'],
+        fighter_component = Fighter(defense=monster['defense'],
                                 power=monster['power'], xp=monster['xp'])
         ai_component = BasicMonster()
         return Entity(x, y, monster['char'], monster['color'], monster['name'], blocks=True,
-                    render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                    render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
+                    attributes=monster['attributes'])

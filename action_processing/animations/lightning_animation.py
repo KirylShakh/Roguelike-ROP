@@ -10,7 +10,7 @@ from action_processing.animations.push_animation import PushAnimation
 
 
 class LightningAnimation:
-    def __init__(self, engine, from_point, target, callback_action=None):
+    def __init__(self, engine, from_point, target, attack=None):
         self.engine = engine
         self.from_x, self.from_y = from_point
         self.target = target
@@ -18,7 +18,7 @@ class LightningAnimation:
         self.path = self.calculate_path()
         self.path_index = 0
         self.completed = False
-        self.callback_action = callback_action
+        self.attack = attack
 
         self.lightning_entities = []
         self.lightning_chars = {
@@ -61,8 +61,8 @@ class LightningAnimation:
         animation = PushAnimation(self.engine, self.target, from_point, push_distance)
         self.engine.animations.append(animation)
 
-        if self.callback_action:
-            return self.callback_action.run()
+        if self.attack:
+            return self.attack.execute()
         return []
 
     def calculate_path(self):

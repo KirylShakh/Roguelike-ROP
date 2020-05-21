@@ -51,8 +51,8 @@ class GameMap:
 
         self.make_map(entities)
 
-        player.fighter.heal(player.fighter.max_hp // 2)
-        message_log.add_message(Message('You take a moment to rest, and recover your strength',
+        player.constitution.heal(player.constitution.base_value // 2)
+        message_log.add_message(Message('You take a moment to rest, and recover yourself',
                                 tcod.light_violet))
 
         return entities
@@ -63,8 +63,8 @@ class GameMap:
 
         self.make_map(entities, False)
 
-        player.fighter.heal(player.fighter.max_hp // 2)
-        message_log.add_message(Message('You take a moment to rest, and recover your strength',
+        player.constitution.heal(player.constitution.base_value // 2)
+        message_log.add_message(Message('You take a moment to rest, and recover yourself',
                                 tcod.light_violet))
 
         return entities

@@ -1,5 +1,6 @@
 from action_processing.animations.move_animation import MoveAnimation
 from game_messages import Message
+from combat.attacks.collision_attack import CollisionAttack
 
 
 class PushAnimation(MoveAnimation):
@@ -15,11 +16,10 @@ class PushAnimation(MoveAnimation):
         self.completed = True
 
         results = []
-        if self.entity.fighter and self.entity.fighter.hp > 0:
-            collision_power = 5
-            damage = min(collision_power - self.entity.fighter.defense, 0)
-            results.append({'message': Message('The {0} collided with something heavy taking {1} damage'.format(self.entity.name, damage))})
-            results.extend(self.entity.fighter.take_damage(damage))
+
+        if self.entity.fighter:
+            attack = CollisionAttack(self.entity)
+            results.extend(attack.execute())
 
         return results
 

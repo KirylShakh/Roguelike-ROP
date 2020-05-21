@@ -7,7 +7,7 @@ inventory_width = 50
 level_up_title = 'Level up. Choose a stat to raise:'
 level_up_width = 40
 
-character_screen_width = 30
-character_screen_height = 10
+character_screen_width = 40
+character_screen_height = 30
 
 location_list_width = 60

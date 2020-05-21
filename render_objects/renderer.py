@@ -99,7 +99,7 @@ class Renderer:
             tcod.console_print_ex(self.panel, message_log.x, y, tcod.BKGND_NONE, tcod.LEFT, message.text)
             y += 1
 
-        self.render_bar(1, 1, 'HP', player.fighter.hp, player.fighter.max_hp,
+        self.render_bar(1, 1, 'CON', player.constitution.value, player.constitution.base_value,
                         tcod.light_red, tcod.darker_red)
         if game_map:
             tcod.console_print_ex(self.panel, 1, 3, tcod.BKGND_NONE, tcod.LEFT,

@@ -21,7 +21,7 @@ class BasicMonster(Component):
                 })
             elif distance >= 2:
                 monster.move_astar(target, entities, game_map)
-            elif target.fighter and target.fighter.hp > 0:
+            elif target.fighter and not target.constitution.depleted():
                 attack_results = monster.fighter.attack(target)
                 results.extend(attack_results)
 

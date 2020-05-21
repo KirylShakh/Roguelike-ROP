@@ -126,10 +126,8 @@ def handle_main_menu(event):
 def handle_level_up_menu(event):
     if event.type == 'KEYDOWN':
         if event.sym == tcod.event.K_a:
-            return {'level_up': 'hp'}
-        elif event.sym == tcod.event.K_b:
             return {'level_up': 'str'}
-        elif event.sym == tcod.event.K_c:
+        elif event.sym == tcod.event.K_b:
             return {'level_up': 'def'}
     return {}
 

@@ -4,11 +4,17 @@ import tcod
 from components.item import Item
 from render_objects.render_order import RenderOrder
 
+from components.attributes.strength import Strength
+from components.attributes.dexterity import Dexterity
+from components.attributes.constitution import Constitution
+from components.attributes.intelligence import Intelligence
+from components.attributes.wisdom import Wisdom
+from components.attributes.charisma import Charisma
 
 class Entity:
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE,
                 fighter=None, ai=None, item=None, inventory=None, stairs=None, level=None,
-                equippable=None, equipment=None):
+                equippable=None, equipment=None, attributes=None, caster=None):
         self.x = x
         self.y = y
         self.char = char
@@ -25,9 +31,10 @@ class Entity:
         self.level = level
         self.equippable = equippable
         self.equipment = equipment
+        self.caster = caster
 
         for component in [self.fighter, self.ai, self.item, self.inventory, self.stairs, self.level,
-                            self.equippable, self.equipment]:
+                            self.equippable, self.equipment, self.caster]:
             if component:
                 component.own(self)
 
@@ -35,6 +42,20 @@ class Entity:
             item = Item()
             self.item = item
             self.item.own(self)
+
+        if attributes:
+            self.strength = Strength(attributes.get('strength', 0))
+            self.dexterity = Dexterity(attributes.get('dexterity', 0))
+            self.constitution = Constitution(attributes.get('constitution', 0))
+            self.intelligence = Intelligence(attributes.get('intelligence', 0))
+            self.wisdom = Wisdom(attributes.get('wisdom', 0))
+            self.charisma = Charisma(attributes.get('charisma', 0))
+
+            for component in [self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma]:
+                component.own(self)
+
+    def attribute_by_name(self, name):
+        return self.__dict__.get(name, None)
 
     def move(self, dx, dy):
         self.x += dx

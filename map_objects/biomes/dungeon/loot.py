@@ -24,7 +24,7 @@ items = {
         'weight_factor': 35,
         'item_component': {
             'use_function': heal,
-            'amount': 40,
+            'caster_level': 1,
         },
     },
     'dagger': {
@@ -64,6 +64,7 @@ items = {
         'weight_factor': [[10, 2]],
         'item_component': {
             'use_function': cast_confuse,
+            'caster_level': 4,
             'targeting': True,
             'targeting_message': Message(message_vars.confuse_target_message, color_vars.target_message),
         },
@@ -75,8 +76,7 @@ items = {
         'weight_factor': [[25, 4]],
         'item_component': {
             'use_function': cast_lightning,
-            'damage': 40,
-            'maximum_range': 5,
+            'caster_level': 1,
         },
     },
     'fireball_scroll': {
@@ -88,8 +88,7 @@ items = {
             'use_function': cast_fireball,
             'targeting': True,
             'targeting_message': Message(message_vars.fireball_target_message, color_vars.target_message),
-            'damage': 25,
-            'radius': 3,
+            'caster_level': 5,
         },
     },
 }

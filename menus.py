@@ -63,8 +63,7 @@ def message_box(header, width, renderer):
     menu(header, [], width, renderer)
 
 def level_up_menu(header, menu_width, player, renderer):
-    options = ['Constitution (+20 HP, from {0})'.format(player.fighter.max_hp),
-                'Strength (+1 attack, from {0})'.format(player.fighter.power),
+    options = ['Strength (+1 attack, from {0})'.format(player.fighter.power),
                 'Agility (+1 defense, from {0})'.format(player.fighter.defense),
                 ]
     menu(header, options, menu_width, renderer)
@@ -74,15 +73,22 @@ def character_screen(player, character_screen_width, character_screen_height, re
     window.default_fg = tcod.white
 
     info_table = [
-        (1, 'Character Information'),
-        (2, 'Level: {0}'.format(player.level.current_level)),
-        (3, 'Experience: {0}'.format(player.level.current_xp)),
-        (4, 'Experience to next level: {0}'.format(player.level.experience_to_next_level)),
-        (6, 'Maximum HP: {0}'.format(player.fighter.max_hp)),
-        (7, 'Attack: {0}'.format(player.fighter.power)),
-        (8, 'Defense: {0}'.format(player.fighter.defense)),
+        'Character Information',
+        'Level: {0}'.format(player.level.current_level),
+        'Experience: {0}'.format(player.level.current_xp),
+        'Experience to next level: {0}'.format(player.level.experience_to_next_level),
+        'Attack: {0}'.format(player.fighter.power),
+        'Defense: {0}'.format(player.fighter.defense),
+        '-'*20,
+        'Attributes:',
+        str(player.strength),
+        str(player.dexterity),
+        str(player.constitution),
+        str(player.intelligence),
+        str(player.wisdom),
+        str(player.charisma),
     ]
-    for (index, text) in info_table:
+    for index, text in enumerate(info_table):
         tcod.console_print_rect_ex(window, 0, index, character_screen_width, character_screen_height,
                                 tcod.BKGND_NONE, tcod.LEFT, text)
 

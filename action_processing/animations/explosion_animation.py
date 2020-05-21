@@ -8,11 +8,11 @@ from game_vars import color_vars
 
 
 class ExplosionAnimation:
-    def __init__(self, engine, from_point, radius, color, damage, callback_action=None):
+    def __init__(self, engine, from_point, radius, color, attack=None):
         self.engine = engine
         self.from_x, self.from_y = from_point
         self.radius = radius
-        self.damage = damage
+        self.attack = attack
         self.color = color
         self.char = tcod.CHAR_BLOCK1
 
@@ -36,16 +36,15 @@ class ExplosionAnimation:
                         self.add_explosion_entity(x, y)
 
         if self.path_index == 2:
-            for entity in self.engine.entities.all:
-                if entity.distance(self.from_x, self.from_y) <= self.radius and entity.fighter:
-                    results.append({'message': Message('The {0} gets burned for {1} hit points'.format(entity.name, self.damage), color_vars.spell)})
-                    results.extend(entity.fighter.take_damage(self.damage))
-
-                    distance_to_center = round(entity.distance(self.from_x, self.from_y))
-                    push_distance = self.radius - distance_to_center + 2
-                    animation = PushAnimation(self.engine, entity, (self.from_x, self.from_y),
-                                                push_distance)
-                    self.engine.animations.append(animation)
+            if not self.attack:
+                return results
+            results.extend(self.attack.execute())
+            for target in self.attack.targets:
+                distance_to_center = round(target.distance(self.from_x, self.from_y))
+                push_distance = self.radius - distance_to_center + 2
+                animation = PushAnimation(self.engine, target, (self.from_x, self.from_y),
+                                            push_distance)
+                self.engine.animations.append(animation)
 
         self.path_index += 1
         if self.path_index >= 5:
