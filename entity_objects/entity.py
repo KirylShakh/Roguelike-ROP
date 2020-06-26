@@ -51,11 +51,23 @@ class Entity:
             self.wisdom = Wisdom(attributes.get('wisdom', 0))
             self.charisma = Charisma(attributes.get('charisma', 0))
 
-            for component in [self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma]:
+            self.attributes = [self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma]
+
+            for component in self.attributes:
                 component.own(self)
+        else:
+            self.attributes = []
 
     def attribute_by_name(self, name):
         return self.__dict__.get(name, None)
+
+    def on_turn_start(self):
+        for attribute in self.attributes:
+            attribute.used_in_this_turn = False
+
+    def on_turn_end(self):
+        for attribute in self.attributes:
+            attribute.take_breather()
 
     def move(self, dx, dy):
         self.x += dx

@@ -6,7 +6,7 @@ class LightningBolt(Spell):
     def setup(self):
         self.name = 'lightning bolt'
         self.level = 1
-        self.damage_die = 6
+        self.value_die = 6
         self.maximum_range = 5
 
         self.tags.extend([SpellTags.DAMAGE, SpellTags.ELEMENTAL, SpellTags.ELECTRICITY])
@@ -15,6 +15,7 @@ class LightningBolt(Spell):
         self.damage_attribute = 'constitution'
 
         self.caster_level = min(self.level + 4, self.caster_level) # for now spell cannot be scaled more than 4 levels above
+        self.damage = self.inflicted_value()
 
     def harm_message(self, target):
         return 'A lightning bolt strikes the {0} with a loud thunder for {1} damage'.format(target.name, self.damage)

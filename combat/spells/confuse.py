@@ -11,7 +11,7 @@ class Confuse(Spell):
     def setup(self):
         self.name = 'confuse'
         self.level = 4
-        self.damage_die = 4
+        self.value_die = 4
 
         self.tags.extend([SpellTags.DAMAGE, SpellTags.MIND])
 
@@ -19,10 +19,10 @@ class Confuse(Spell):
         self.damage_attribute = 'intelligence'
 
         self.caster_level = min(self.level + 4, self.caster_level) # for now spell cannot be scaled more than 4 levels above
+        self.damage = self.inflicted_value()
 
-    @property
-    def damage(self):
-        return randint(1, self.damage_die)
+    def inflicted_value(self):
+        return randint(1, self.value_die)
 
     @property
     def resist_by(self):

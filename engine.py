@@ -226,6 +226,9 @@ class Engine:
 
             for event in tcod.event.wait():
                 self.player_turn_results = []
+                if self.game_state == GameStates.PLAYERS_TURN:
+                    self.entities.on_turn_start()
+
                 processed_event = event_handler.handle(event, self.game_state)
 
                 if processed_event.get('exit'):
@@ -342,9 +345,13 @@ class Engine:
                 if self.game_state == GameStates.ENEMY_TURN:
                     action = WorldAction(self)
                     action.run()
+                    if self.game_state == GameStates.PLAYERS_TURN:
+                        self.entities.on_turn_end()
 
                 if self.game_state == GameStates.ANIMATING:
                     self.process_animations()
+                    if self.game_state == GameStates.PLAYERS_TURN:
+                        self.entities.on_turn_end()
 
     def render_tick(self):
         self.renderer.render_all(self)

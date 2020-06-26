@@ -6,7 +6,7 @@ class Heal(Spell):
     def setup(self):
         self.name = 'heal'
         self.level = 1
-        self.heal_die = 8
+        self.value_die = 8
 
         self.tags.extend([SpellTags.HEAL])
 
@@ -14,10 +14,7 @@ class Heal(Spell):
         self.affected_attribute = 'constitution'
 
         self.caster_level = min(self.level + 4, self.caster_level) # for now spell cannot be scaled more than 4 levels above
-
-    @property
-    def heal_amount(self):
-        return sum([randint(1, self.heal_die) for _ in range(self.caster_level)])
+        self.heal_amount = self.inflicted_value()
 
     def heal_message(self, target):
         return 'A healing light runs along the body of {0} healing its {1} for {2} damage'.format(target.name,

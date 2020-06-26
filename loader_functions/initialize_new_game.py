@@ -35,9 +35,9 @@ def get_game_variables():
 
 def create_player():
     attributes = {
-        'strength': 10,
+        'strength': 20,
         'dexterity': 10,
-        'constitution': 10,
+        'constitution': 30,
         'intelligence': 10,
         'wisdom': 10,
         'charisma': 10,

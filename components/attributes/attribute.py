@@ -7,6 +7,10 @@ class Attribute(Component):
         self.tired = 0
         self.damaged = 0
 
+        self.used_in_this_turn = False
+        self.turns_since_damaged = 0
+        self.regeneration_delay = 5
+
         self.name = 'attribute'
         self.depleted_condition = 'none'
 
@@ -14,11 +18,28 @@ class Attribute(Component):
     def value(self):
         return self.base_value - self.tired - self.damaged
 
+    @property
+    def modifier(self):
+        modifier = (self.value // 10) * 2
+        if modifier is 0:
+            modifier = 1
+        return modifier
+
     def tire(self, amount):
         if amount > self.value:
             return False
         self.tired += amount
+        self.used_in_this_turn = True
         return True
+
+    def take_breather(self):
+        if not self.used_in_this_turn and self.tired > 0:
+            self.rest(self.modifier)
+
+        if self.turns_since_damaged >= self.regeneration_delay and self.damaged > 0:
+            self.heal(self.modifier)
+        else:
+            self.turns_since_damaged += 1
 
     def rest(self, amount):
         self.tired -= amount
@@ -27,6 +48,8 @@ class Attribute(Component):
 
     def damage(self, amount):
         self.damaged += amount
+        self.used_in_this_turn = True
+        self.turns_since_damaged = 0
 
     def heal(self, amount):
         self.damaged -= amount

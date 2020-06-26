@@ -18,16 +18,12 @@ class BaseAttack:
         return target.constitution
 
     @property
-    def attribute_bonus(self):
-        return self.attacking_attribute.value // 10 # modifier is number of full tens in attribute
-
-    @property
     def damage_amount(self):
-        return self.attacker.fighter.power + self.attribute_bonus
+        return self.attacker.fighter.power + self.attacking_attribute.modifier
 
     @property
     def tire_amount(self):
-        return self.attribute_bonus or 1 # minimal cost of attack is 1
+        return self.attacking_attribute.modifier or 1 # minimal cost of attack is 1
 
     # apply resists to damage if any and return actual value that should be applied as damage
     def resist_damage(self, target):

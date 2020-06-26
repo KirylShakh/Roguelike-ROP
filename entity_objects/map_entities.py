@@ -18,6 +18,14 @@ class MapEntities:
     def all(self):
         return self.list
 
+    def on_turn_start(self):
+        for entity in self.all:
+            entity.on_turn_start()
+
+    def on_turn_end(self):
+        for entity in self.all:
+            entity.on_turn_end()
+
     def find_by_point(self, x, y):
         for entity in self.list:
             if entity.x == x and entity.y == y:

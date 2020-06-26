@@ -20,15 +20,14 @@ class Spell:
 
     def setup(self):
         self.level = 0
-        self.damage_die = 1
+        self.value_die = 1
 
     @property
     def tire_cost(self):
         return self.level
 
-    @property
-    def damage(self):
-        return sum([randint(1, self.damage_die) for _ in range(self.caster_level)])
+    def inflicted_value(self):
+        return sum([randint(1, self.value_die) for _ in range(self.caster_level)])
 
     @property
     def resist_by(self):
