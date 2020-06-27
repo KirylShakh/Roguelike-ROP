@@ -31,7 +31,7 @@ class PushAnimation(MoveAnimation):
 
             step_x = -1 if self.entity.x - self.from_x < 0 else 1
             x = self.entity.x
-            for i in range(self.distance):
+            for _ in range(self.distance):
                 x += step_x
                 y = round(k * x + b)
                 path.append((x, y))
@@ -42,7 +42,7 @@ class PushAnimation(MoveAnimation):
 
             step_y = -1 if self.entity.y - self.from_y < 0 else 1
             y = self.entity.y
-            for i in range(self.distance):
+            for _ in range(self.distance):
                 y += step_y
                 path.append((b, y))
 

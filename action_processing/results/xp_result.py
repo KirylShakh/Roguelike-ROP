@@ -17,3 +17,5 @@ class XpResult(Result):
             )
             self.engine.previous_game_state = self.engine.game_state
             self.engine.game_state = GameStates.LEVEL_UP
+
+            self.engine.render_tick()

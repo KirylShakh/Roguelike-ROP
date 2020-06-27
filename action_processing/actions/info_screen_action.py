@@ -6,3 +6,4 @@ class InfoScreenAction(Action):
     def run(self, new_game_state):
         self.engine.previous_game_state = self.engine.game_state
         self.engine.game_state = new_game_state
+        self.engine.render_tick()

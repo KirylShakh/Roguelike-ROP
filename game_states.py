@@ -11,3 +11,4 @@ class GameStates(Enum):
     CHARACTER_SCREEN = auto()
     ANIMATING = auto()
     SHOW_LOCATIONS = auto()
+    EXIT = auto()

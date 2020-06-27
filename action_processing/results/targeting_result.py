@@ -10,3 +10,5 @@ class TargetingResult(Result):
         self.engine.targeting_item = targeting
 
         self.engine.message_log.add_message(self.engine.targeting_item.item.targeting_message)
+
+        self.engine.render_tick()

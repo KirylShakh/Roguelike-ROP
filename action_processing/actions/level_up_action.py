@@ -10,3 +10,4 @@ class LevelUpAction(Action):
             player.fighter.base_defense += 1
 
         self.engine.game_state = self.engine.previous_game_state
+        self.engine.render_tick()

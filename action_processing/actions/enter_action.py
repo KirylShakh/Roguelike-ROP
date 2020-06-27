@@ -13,26 +13,28 @@ from components.stairs import StairsDirections
 
 class EnterAction(Action):
     def run(self, location_index=None):
+        # maybe change that in future so someone can sent player into another location on its turn
+        if self.engine.game_state != GameStates.PLAYERS_TURN:
+            return
+
         if self.engine.player_location == PlayerLocations.WORLD_MAP and location_index is not None:
-            return self.enter_location(location_index)
+            self.enter_location(location_index)
         elif self.engine.player_location == PlayerLocations.WORLD_MAP:
-            return self.enter_world_tile()
+            self.enter_world_tile()
         elif self.engine.player_location == PlayerLocations.DUNGEON:
-            return self.enter_next_floor()
+            self.enter_next_floor()
 
     def enter_world_tile(self):
-        if self.engine.game_state == GameStates.PLAYERS_TURN:
-            player = self.engine.entities.player
-            tile = self.engine.world_map.tiles[player.x][player.y]
-            if tile.biom == Biomes.DUNGEON:
-                map_creator = DungeonMap(room_vars.max_num, room_vars.min_size, room_vars.max_size)
-                return self.enter_nameless_location(map_creator)
-            elif tile.biom == Biomes.FOREST:
-                map_creator = ForestMap(5)
-                return self.enter_nameless_location(map_creator)
-            else:
-                self.engine.message_log.add_message(Message('There is nowhere to enter here', color_vars.warning))
-        return False
+        player = self.engine.entities.player
+        tile = self.engine.world_map.tiles[player.x][player.y]
+        if tile.biom == Biomes.DUNGEON:
+            map_creator = DungeonMap(room_vars.max_num, room_vars.min_size, room_vars.max_size)
+            self.enter_nameless_location(map_creator)
+        elif tile.biom == Biomes.FOREST:
+            map_creator = ForestMap(5)
+            self.enter_nameless_location(map_creator)
+        else:
+            self.engine.message_log.add_message(Message('There is nowhere to enter here', color_vars.warning))
 
     def enter_location(self, location_index):
         player = self.engine.entities.player
@@ -40,14 +42,12 @@ class EnterAction(Action):
 
         locations = self.engine.world_map.tiles[player.x][player.y].locations
         if location_index < 0 or location_index >= len(locations):
-            return False
-        game_map = self.engine.world_map.tiles[player.x][player.y].locations[location_index]
+            return
+        game_map = locations[location_index]
         game_map.make_map(self.engine.entities)
         self.engine.world_map.current_dungeon = game_map
-        self.engine.game_state = GameStates.PLAYERS_TURN
-
-        self.engine.renderer.clear()
-        return self.engine.enter_dungeon()
+        self.engine.player_location = PlayerLocations.DUNGEON
+        self.engine.player_turn_results.append({'change_location': True})
 
     def enter_nameless_location(self, map_creator):
         player = self.engine.entities.player
@@ -56,26 +56,18 @@ class EnterAction(Action):
         game_map = GameMap(map_vars.width, map_vars.height, map_creator=map_creator)
         game_map.make_map(self.engine.entities)
         self.engine.world_map.current_dungeon = game_map
-
-        self.engine.renderer.clear()
-        return self.engine.enter_dungeon()
+        self.engine.player_location = PlayerLocations.DUNGEON
+        self.engine.player_turn_results.append({'change_location': True})
 
     def enter_next_floor(self):
-        if self.engine.game_state == GameStates.PLAYERS_TURN:
-            player = self.engine.entities.player
-            dungeon_map = self.engine.world_map.current_dungeon
-            for entity in self.engine.entities.all:
-                if entity.x == player.x and entity.y == player.y:
-                    if entity.stairs and entity.stairs.direction == StairsDirections.DOWN:
-                        self.engine.entities = dungeon_map.next_floor(player, self.engine.message_log)
-                        self.engine.fov_map = initialize_fov(dungeon_map)
-                        self.engine.fov_recompute = True
-                        self.engine.renderer.clear()
-
-                        self.engine.player_turn_results.append({'exit_location': True})
-                        return True
-                    elif entity.stairs and entity.stairs.direction == StairsDirections.WORLD:
-                        return False # implement
-            else:
-                self.engine.message_log.add_message(Message('There are no down stairs here', color_vars.warning))
-        return False
+        player = self.engine.entities.player
+        dungeon_map = self.engine.world_map.current_dungeon
+        for entity in self.engine.entities.all:
+            if entity.x == player.x and entity.y == player.y:
+                if entity.stairs and entity.stairs.direction == StairsDirections.DOWN:
+                    self.engine.entities = dungeon_map.next_floor(player, self.engine.message_log)
+                    self.engine.player_turn_results.append({'change_location': True})
+                elif entity.stairs and entity.stairs.direction == StairsDirections.WORLD:
+                    return # implement - not sure what situations there could be to allow this yet
+        else:
+            self.engine.message_log.add_message(Message('There are no down stairs here', color_vars.warning))

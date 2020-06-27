@@ -25,7 +25,7 @@ from action_processing.actions.move_action import MoveAction
 from action_processing.actions.pickup_action import PickupAction
 from action_processing.actions.left_click_action import LeftClickAction
 from action_processing.actions.right_click_action import RightClickAction
-from action_processing.actions.return_to_world_map_action import ReturnToWorldMapAction
+from action_processing.actions.setup_new_location_action import SetupNewLocationAction
 from action_processing.actions.wait_action import WaitAction
 from action_processing.actions.world_action import WorldAction
 
@@ -111,254 +111,198 @@ class Engine:
                 show_main_menu = True
 
     def play_game(self):
+        self.setup_game_map()
+
+        turn_count = 0
+        while self.game_state != GameStates.EXIT:
+            self.run_turn()
+            if self.game_state != GameStates.EXIT:
+                turn_count += 1
+        print("Turns passed {0}".format(turn_count))
+
+    def setup_game_map(self):
         if self.player_location == None:
             self.player_location = PlayerLocations.WORLD_MAP
 
-        if self.player_location == PlayerLocations.WORLD_MAP:
-            self.fov_recompute = True
-            self.fov_map = initialize_world_fov(self.world_map)
-
-            self.whats_under_mouse = ''
-            self.previous_game_state = self.game_state
-        elif self.player_location == PlayerLocations.DUNGEON:
-            if self.enter_dungeon():
-                return True
-
-        while True:
-            if self.fov_recompute:
-                recompute_world_fov(self.fov_map, self.entities.player.x, self.entities.player.y)
-            self.render_tick()
-
-            for event in tcod.event.wait():
-                self.player_turn_results = []
-                processed_event = event_handler.handle(event, self.game_state)
-
-                if processed_event.get('exit'):
-                    action = QuitAction(self)
-                    if action.run():
-                        return True
-
-                if processed_event.get('wait'):
-                    action = WaitAction(self)
-                    action.run()
-
-                if processed_event.get('move'):
-                    action = MoveAction(self)
-                    action.run(processed_event.get('move'))
-
-                if processed_event.get('show_inventory'):
-                    action = InfoScreenAction(self)
-                    action.run(GameStates.SHOW_INVENTORY)
-
-                if processed_event.get('drop_inventory'):
-                    action = InfoScreenAction(self)
-                    action.run(GameStates.DROP_INVENTORY)
-
-                if processed_event.get('show_character_screen'):
-                    action = InfoScreenAction(self)
-                    action.run(GameStates.CHARACTER_SCREEN)
-
-                if processed_event.get('take_stairs_down'):
-                    action = EnterAction(self)
-                    if action.run():
-                        return True
-                    else:
-                        break
-
-                if processed_event.get('explore'):
-                    action = ExploreAction(self)
-                    if action.run():
-                        action = InfoScreenAction(self)
-                        action.run(GameStates.SHOW_LOCATIONS)
-
-                if processed_event.get('location_index') is not None:
-                    action = EnterAction(self)
-                    if action.run(processed_event.get('location_index')):
-                        return True
-                    else:
-                        break
-
-                if processed_event.get('fullscreen'):
-                    action = FullscreenAction(self)
-                    action.run()
-
-                if processed_event.get('mouseover'):
-                    action = MouseoverAction(self)
-                    self.whats_under_mouse = action.run(processed_event.get('mouseover'))
-
-                for player_turn_result in self.player_turn_results:
-                    if player_turn_result.get('message'):
-                        result = MessageResult(self)
-                        result.run(player_turn_result.get('message'))
-
-                    if player_turn_result.get('equip'):
-                        result = EquipResult(self)
-                        result.run(player_turn_result.get('equip'))
-
-                if self.game_state == GameStates.ENEMY_TURN:
-                    action = WorldAction(self)
-                    action.run()
-
-    def enter_dungeon(self):
-        game_map = self.world_map.current_dungeon
-        game_map.visited = True
-
         self.fov_recompute = True
-        self.fov_map = initialize_fov(game_map)
-
+        self.whats_under_mouse = ''
         self.previous_game_state = self.game_state
 
-        self.whats_under_mouse = ''
-        player = self.entities.player
-        self.player_location = PlayerLocations.DUNGEON
-
-        while True:
-            if self.player_location == PlayerLocations.WORLD_MAP:
-                action = ReturnToWorldMapAction(self)
-                action.run()
-                return False
-
-            exit_location = False
-
-            if self.fov_recompute:
-                recompute_fov(self.fov_map, player.x, player.y, self.world_map.current_dungeon.map_creator.fov_radius)
-            self.render_tick()
-
-            for event in tcod.event.wait():
-                self.player_turn_results = []
-                if self.game_state == GameStates.PLAYERS_TURN:
-                    self.entities.on_turn_start()
-
-                processed_event = event_handler.handle(event, self.game_state)
-
-                if processed_event.get('exit'):
-                    action = QuitAction(self)
-                    if action.run():
-                        return True
-
-                if processed_event.get('wait'):
-                    action = WaitAction(self)
-                    action.run()
-
-                if processed_event.get('move'):
-                    action = MoveAction(self)
-                    action.run(processed_event.get('move'))
-
-                if processed_event.get('pickup'):
-                    action = PickupAction(self)
-                    action.run()
-
-                if processed_event.get('show_inventory'):
-                    action = InfoScreenAction(self)
-                    action.run(GameStates.SHOW_INVENTORY)
-
-                if processed_event.get('inventory_index') is not None:
-                    action = InventoryIndexAction(self)
-                    action.run(processed_event.get('inventory_index'))
-
-                if processed_event.get('drop_inventory'):
-                    action = InfoScreenAction(self)
-                    action.run(GameStates.DROP_INVENTORY)
-
-                if processed_event.get('show_character_screen'):
-                    action = InfoScreenAction(self)
-                    action.run(GameStates.CHARACTER_SCREEN)
-
-                if processed_event.get('left_click'):
-                    action = LeftClickAction(self)
-                    action.run(processed_event.get('left_click'))
-
-                if processed_event.get('right_click'):
-                    action = LeftClickAction(self)
-                    action.run(processed_event.get('right_click'))
-
-                if processed_event.get('level_up'):
-                    action = LevelUpAction(self)
-                    action.run(processed_event.get('level_up'))
-
-                if processed_event.get('take_stairs_down'):
-                    action = EnterAction(self)
-                    action.run()
-
-                if processed_event.get('take_stairs_up'):
-                    action = ExitAction(self)
-                    action.run()
-
-                if processed_event.get('fullscreen'):
-                    action = FullscreenAction(self)
-                    action.run()
-
-                if processed_event.get('mouseover'):
-                    action = MouseoverAction(self)
-                    self.whats_under_mouse = action.run(processed_event.get('mouseover'))
-
-                if processed_event.get('cast_fireball'):
-                    action = CastFireballAction(self)
-                    action.run()
-
-                for player_turn_result in self.player_turn_results:
-                    if player_turn_result.get('message'):
-                        result = MessageResult(self)
-                        result.run(player_turn_result.get('message'))
-
-                    if player_turn_result.get('targeting_cancelled'):
-                        result = TargetingCancelledResult(self)
-                        result.run()
-
-                    if player_turn_result.get('dead'):
-                        result = DeadEntityResult(self)
-                        result.run(player_turn_result.get('dead'))
-
-                    if player_turn_result.get('item_added'):
-                        result = ItemAddedResult(self)
-                        result.run(player_turn_result.get('item_added'))
-
-                    if player_turn_result.get('consumed'):
-                        result = ItemConsumedResult(self)
-                        result.run()
-
-                    if player_turn_result.get('item_dropped'):
-                        result = ItemDroppedResult(self)
-                        result.run(player_turn_result.get('item_dropped'))
-
-                    if player_turn_result.get('equip'):
-                        result = EquipResult(self)
-                        result.run(player_turn_result.get('equip'))
-
-                    if player_turn_result.get('targeting'):
-                        result = TargetingResult(self)
-                        result.run(player_turn_result.get('targeting'))
-
-                    if player_turn_result.get('xp'):
-                        result = XpResult(self)
-                        result.run(player_turn_result.get('xp'))
-
-                    if player_turn_result.get('exit_location'):
-                        exit_location = True
-
-                if exit_location:
-                    break
-
-                if len(self.animations) > 0:
-                    self.process_animations()
-
-                if self.game_state == GameStates.ENEMY_TURN:
-                    action = WorldAction(self)
-                    action.run()
-                    if self.game_state == GameStates.PLAYERS_TURN:
-                        self.entities.on_turn_end()
-
-                if self.game_state == GameStates.ANIMATING:
-                    self.process_animations()
-                    if self.game_state == GameStates.PLAYERS_TURN:
-                        self.entities.on_turn_end()
+        if self.player_location == PlayerLocations.WORLD_MAP:
+            self.fov_map = initialize_world_fov(self.world_map)
+        elif self.player_location == PlayerLocations.DUNGEON:
+            self.fov_map = initialize_fov(self.world_map.current_dungeon)
 
     def render_tick(self):
+        if self.fov_recompute:
+            if self.player_location == PlayerLocations.WORLD_MAP:
+                recompute_world_fov(self.fov_map, self.entities.player.x, self.entities.player.y)
+            elif self.player_location == PlayerLocations.DUNGEON:
+                recompute_fov(self.fov_map, self.entities.player.x, self.entities.player.y,
+                                self.world_map.current_dungeon.map_creator.fov_radius)
+
         self.renderer.render_all(self)
         self.fov_recompute = False
 
         tcod.console_flush()
         self.renderer.clear_all(self.entities)
+
+    def run_turn(self):
+        self.on_turn_start()
+        self.run_player_turn()
+        self.run_world_turn()
+        self.on_turn_end()
+
+    def on_turn_start(self):
+        self.render_tick()
+
+        if self.player_location == PlayerLocations.DUNGEON:
+            self.entities.on_turn_start()
+
+    def run_player_turn(self):
+        while self.game_state != GameStates.ENEMY_TURN and self.game_state != GameStates.EXIT:
+            for raw_event in tcod.event.wait():
+                event = event_handler.handle(raw_event, self.game_state)
+                self.player_turn_results = []
+
+                if event.get('exit'):
+                    action = QuitAction(self)
+                    action.run()
+
+                if event.get('wait'):
+                    action = WaitAction(self)
+                    action.run()
+
+                if event.get('move'):
+                    action = MoveAction(self)
+                    action.run(event.get('move'))
+
+                if event.get('show_inventory'):
+                    action = InfoScreenAction(self)
+                    action.run(GameStates.SHOW_INVENTORY)
+
+                if event.get('drop_inventory'):
+                    action = InfoScreenAction(self)
+                    action.run(GameStates.DROP_INVENTORY)
+
+                if event.get('show_character_screen'):
+                    action = InfoScreenAction(self)
+                    action.run(GameStates.CHARACTER_SCREEN)
+
+                if event.get('take_stairs_down'):
+                    action = EnterAction(self)
+                    action.run()
+
+                if event.get('fullscreen'):
+                    action = FullscreenAction(self)
+                    action.run()
+
+                if event.get('mouseover'):
+                    action = MouseoverAction(self)
+                    self.whats_under_mouse = action.run(event.get('mouseover'))
+
+                if event.get('level_up'):
+                    action = LevelUpAction(self)
+                    action.run(event.get('level_up'))
+
+                if self.player_location == PlayerLocations.WORLD_MAP:
+                    if event.get('explore'):
+                        action = ExploreAction(self)
+                        action.run()
+
+                    if event.get('location_index') is not None:
+                        action = EnterAction(self)
+                        action.run(event.get('location_index'))
+
+                if self.player_location == PlayerLocations.DUNGEON:
+                    if event.get('pickup'):
+                        action = PickupAction(self)
+                        action.run()
+
+                    if event.get('inventory_index') is not None:
+                        action = InventoryIndexAction(self)
+                        action.run(event.get('inventory_index'))
+
+                    if event.get('left_click'):
+                        action = LeftClickAction(self)
+                        action.run(event.get('left_click'))
+
+                    if event.get('right_click'):
+                        action = RightClickAction(self)
+                        action.run(event.get('right_click'))
+
+                    if event.get('take_stairs_up'):
+                        action = ExitAction(self)
+                        action.run()
+
+                    if event.get('cast_fireball'):
+                        action = CastFireballAction(self)
+                        action.run()
+
+                for player_turn_result in self.player_turn_results:
+                    if player_turn_result.get('message'):
+                        result = MessageResult(self)
+                        result.run(player_turn_result.get('message'))
+
+                    if player_turn_result.get('equip'):
+                        result = EquipResult(self)
+                        result.run(player_turn_result.get('equip'))
+
+                    if player_turn_result.get('change_location'):
+                        action = SetupNewLocationAction(self)
+                        action.run()
+
+                    if player_turn_result.get('dead'):
+                        result = DeadEntityResult(self)
+                        result.run(player_turn_result.get('dead'))
+
+                    if player_turn_result.get('xp'):
+                        result = XpResult(self)
+                        result.run(player_turn_result.get('xp'))
+
+                    if self.player_location == PlayerLocations.DUNGEON:
+                        if player_turn_result.get('targeting_cancelled'):
+                            result = TargetingCancelledResult(self)
+                            result.run()
+
+                        if player_turn_result.get('item_added'):
+                            result = ItemAddedResult(self)
+                            result.run(player_turn_result.get('item_added'))
+
+                        if player_turn_result.get('consumed'):
+                            result = ItemConsumedResult(self)
+                            result.run()
+
+                        if player_turn_result.get('item_dropped'):
+                            result = ItemDroppedResult(self)
+                            result.run(player_turn_result.get('item_dropped'))
+
+                        if player_turn_result.get('targeting'):
+                            result = TargetingResult(self)
+                            result.run(player_turn_result.get('targeting'))
+
+                if len(self.animations) > 0:
+                    self.process_animations()
+
+                if self.game_state == GameStates.ENEMY_TURN or self.game_state == GameStates.EXIT:
+                    break
+
+    def run_world_turn(self):
+        if self.game_state == GameStates.EXIT:
+            return
+
+        action = WorldAction(self)
+        action.run()
+
+        if self.game_state == GameStates.ANIMATING:
+            self.process_animations()
+
+    def on_turn_end(self):
+        if self.game_state == GameStates.EXIT:
+            return
+
+        if self.player_location == PlayerLocations.DUNGEON:
+            self.entities.on_turn_end()
 
     def process_animations(self):
         action = AnimateAction(self)

@@ -9,3 +9,5 @@ class TargetingCancelledResult(Result):
 
         self.engine.targeting_item = None
         self.engine.targeting_ability = None
+
+        self.engine.render_tick()
