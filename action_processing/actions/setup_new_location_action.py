@@ -19,3 +19,4 @@ class SetupNewLocationAction(Action):
         self.engine.renderer.clear()
         self.engine.setup_game_map()
         self.engine.render_tick()
+        self.engine.regulatory_flags.discard('change_location')

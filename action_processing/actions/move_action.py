@@ -18,7 +18,7 @@ class MoveAction(Action):
 
             if not self.engine.world_map.is_void(player.x + dx, player.y + dy):
                 player.move(dx, dy)
-                self.engine.fov_recompute = True
+                self.engine.regulatory_flags.add('fov_recompute')
 
                 self.engine.game_state = GameStates.ENEMY_TURN
 
@@ -39,12 +39,12 @@ class MoveAction(Action):
                     self.engine.player_turn_results.extend(attack_results)
                 else:
                     player.move(dx, dy)
-                    self.engine.fov_recompute = True
+                    self.engine.regulatory_flags.add('fov_recompute')
 
                 self.engine.game_state = GameStates.ENEMY_TURN
             elif game_map.is_void(destination_x, destination_y):
                 biom = self.engine.world_map.current_biom()
                 if biom == Biomes.FOREST:
                     self.engine.player_location = PlayerLocations.WORLD_MAP
-                    self.engine.player_turn_results.append({'change_location': True})
+                    self.engine.regulatory_flags.add('change_location')
                     self.engine.world_map.current_dungeon.store_entities(self.engine.entities)

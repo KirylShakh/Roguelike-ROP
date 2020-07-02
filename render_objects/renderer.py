@@ -22,12 +22,12 @@ class Renderer:
     def render_all(self, engine):
         if engine.player_location == PlayerLocations.WORLD_MAP:
             self.render_world(engine.entities, engine.world_map,
-                        engine.fov_map, engine.fov_recompute, engine.message_log,
-                        engine.whats_under_mouse, engine.game_state)
+                        engine.fov_map, 'fov_recompute' in engine.regulatory_flags,
+                        engine.message_log, engine.whats_under_mouse, engine.game_state)
         elif engine.player_location == PlayerLocations.DUNGEON:
             self.render_dungeon(engine.entities, engine.world_map.current_dungeon,
-                        engine.fov_map, engine.fov_recompute, engine.message_log,
-                        engine.whats_under_mouse, engine.game_state)
+                        engine.fov_map, 'fov_recompute' in engine.regulatory_flags,
+                        engine.message_log, engine.whats_under_mouse, engine.game_state)
 
     def render_world(self, entities, world_map, fov_map, fov_recompute,
                     message_log, whats_under_mouse, game_state):

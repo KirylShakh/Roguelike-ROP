@@ -53,7 +53,6 @@ class Engine:
         self.player_location = None
 
         self.fov_map = None
-        self.fov_recompute = False
 
         self.targeting_item = None
         self.player_turn_results = None
@@ -61,7 +60,7 @@ class Engine:
 
         self.animations = []
 
-        self.targeting_ability = None
+        self.targeting_ability = None # temp property for casting fireball
 
     def main(self):
         self.renderer.render_root()
@@ -75,16 +74,16 @@ class Engine:
             if show_main_menu:
                 main_menu(main_menu_background_image, menu_vars.main_width, self.renderer)
 
-                for event in tcod.event.wait():
+                for raw_event in tcod.event.wait():
                     if show_load_error_message:
                         message_box('No save game to load', 50, self.renderer)
 
                     tcod.console_flush()
 
-                    action = event_handler.handle_main_menu(event)
-                    new_game = action.get('new_game')
-                    load_saved_game = action.get('load_saved_game')
-                    exit_game = action.get('exit_game')
+                    event = event_handler.handle_main_menu(raw_event)
+                    new_game = event.get('new_game')
+                    load_saved_game = event.get('load_saved_game')
+                    exit_game = event.get('exit_game')
 
                     if show_load_error_message and (new_game or load_saved_game or exit_game):
                         show_load_error_message = False
@@ -111,6 +110,7 @@ class Engine:
                 show_main_menu = True
 
     def play_game(self):
+        self.regulatory_flags = set()
         self.setup_game_map()
 
         turn_count = 0
@@ -124,7 +124,7 @@ class Engine:
         if self.player_location == None:
             self.player_location = PlayerLocations.WORLD_MAP
 
-        self.fov_recompute = True
+        self.regulatory_flags.add('fov_recompute')
         self.whats_under_mouse = ''
         self.previous_game_state = self.game_state
 
@@ -134,7 +134,7 @@ class Engine:
             self.fov_map = initialize_fov(self.world_map.current_dungeon)
 
     def render_tick(self):
-        if self.fov_recompute:
+        if 'fov_recompute' in self.regulatory_flags:
             if self.player_location == PlayerLocations.WORLD_MAP:
                 recompute_world_fov(self.fov_map, self.entities.player.x, self.entities.player.y)
             elif self.player_location == PlayerLocations.DUNGEON:
@@ -142,7 +142,7 @@ class Engine:
                                 self.world_map.current_dungeon.map_creator.fov_radius)
 
         self.renderer.render_all(self)
-        self.fov_recompute = False
+        self.regulatory_flags.discard('fov_recompute')
 
         tcod.console_flush()
         self.renderer.clear_all(self.entities)
@@ -199,7 +199,7 @@ class Engine:
 
                 if event.get('mouseover'):
                     action = MouseoverAction(self)
-                    self.whats_under_mouse = action.run(event.get('mouseover'))
+                    action.run(event.get('mouseover'))
 
                 if event.get('level_up'):
                     action = LevelUpAction(self)
@@ -248,10 +248,6 @@ class Engine:
                         result = EquipResult(self)
                         result.run(player_turn_result.get('equip'))
 
-                    if player_turn_result.get('change_location'):
-                        action = SetupNewLocationAction(self)
-                        action.run()
-
                     if player_turn_result.get('dead'):
                         result = DeadEntityResult(self)
                         result.run(player_turn_result.get('dead'))
@@ -283,6 +279,10 @@ class Engine:
 
                 if len(self.animations) > 0:
                     self.process_animations()
+
+                if 'change_location' in self.regulatory_flags:
+                    action = SetupNewLocationAction(self)
+                    action.run()
 
                 if self.game_state == GameStates.ENEMY_TURN or self.game_state == GameStates.EXIT:
                     break

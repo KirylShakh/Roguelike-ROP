@@ -8,7 +8,6 @@ class MouseoverAction(Action):
             x, y = (mouseover_tile.x, mouseover_tile.y)
             if not self.engine.world_map.is_void(x, y) and self.engine.fov_map.fov[x][y]:
                 return self.engine.world_map.tiles[x][y].biom.name.capitalize()
-            return ''
         elif self.engine.player_location == PlayerLocations.DUNGEON:
             x, y = (mouseover_tile.x, mouseover_tile.y)
             tile_contents = [entity.name for entity in self.engine.entities.all
@@ -18,5 +17,5 @@ class MouseoverAction(Action):
                 tile = self.engine.world_map.current_dungeon.tiles[x][y]
                 if tile.explored and tile.char and tile.char.name:
                     tile_contents.append(tile.char.name)
-
-            return ', '.join(tile_contents)
+            self.engine.whats_under_mouse = ', '.join(tile_contents)
+            self.engine.render_tick()

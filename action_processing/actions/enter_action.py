@@ -13,10 +13,6 @@ from components.stairs import StairsDirections
 
 class EnterAction(Action):
     def run(self, location_index=None):
-        # maybe change that in future so someone can sent player into another location on its turn
-        if self.engine.game_state != GameStates.PLAYERS_TURN:
-            return
-
         if self.engine.player_location == PlayerLocations.WORLD_MAP and location_index is not None:
             self.enter_location(location_index)
         elif self.engine.player_location == PlayerLocations.WORLD_MAP:
@@ -47,7 +43,8 @@ class EnterAction(Action):
         game_map.make_map(self.engine.entities)
         self.engine.world_map.current_dungeon = game_map
         self.engine.player_location = PlayerLocations.DUNGEON
-        self.engine.player_turn_results.append({'change_location': True})
+        self.engine.game_state = GameStates.PLAYERS_TURN
+        self.engine.regulatory_flags.add('change_location')
 
     def enter_nameless_location(self, map_creator):
         player = self.engine.entities.player
@@ -57,7 +54,7 @@ class EnterAction(Action):
         game_map.make_map(self.engine.entities)
         self.engine.world_map.current_dungeon = game_map
         self.engine.player_location = PlayerLocations.DUNGEON
-        self.engine.player_turn_results.append({'change_location': True})
+        self.engine.regulatory_flags.add('change_location')
 
     def enter_next_floor(self):
         player = self.engine.entities.player
@@ -66,7 +63,7 @@ class EnterAction(Action):
             if entity.x == player.x and entity.y == player.y:
                 if entity.stairs and entity.stairs.direction == StairsDirections.DOWN:
                     self.engine.entities = dungeon_map.next_floor(player, self.engine.message_log)
-                    self.engine.player_turn_results.append({'change_location': True})
+                    self.engine.regulatory_flags.add('change_location')
                 elif entity.stairs and entity.stairs.direction == StairsDirections.WORLD:
                     return # implement - not sure what situations there could be to allow this yet
         else:
