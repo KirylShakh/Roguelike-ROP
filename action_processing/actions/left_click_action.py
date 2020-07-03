@@ -2,7 +2,8 @@ from action_processing.actions.action import Action
 from game_states import GameStates
 from game_vars import color_vars
 from game_messages import Message
-from action_processing.combat.cast_fireball_action import CastFireballAction
+from action_processing.combat.cast_scroll_action import CastScrollAction
+from combat.spells.fireball import Fireball
 
 
 class LeftClickAction(Action):
@@ -24,6 +25,7 @@ class LeftClickAction(Action):
         self.engine.targeting_item = None
 
     def cast_fireball(self, target_x, target_y):
-        action = CastFireballAction(self.engine)
-        self.engine.player_turn_results.extend(action.run(self.engine.entities.player, (target_x, target_y), caster_level=5))
+        action = CastScrollAction(self.engine)
+        results = action.run(self.engine.entities.player, spell_class=Fireball, target_point=(target_x, target_y), caster_level=5)
+        self.engine.player_turn_results.extend(results)
         self.engine.targeting_ability = None

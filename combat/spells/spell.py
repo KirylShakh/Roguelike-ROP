@@ -9,12 +9,16 @@ class SpellTags(Enum):
     ELEMENTAL = auto()
     FIRE = auto()
     ELECTRICITY = auto()
+    AREA = auto()
+    AUTO_TARGET = auto()
+    PERSONAL = auto()
+    TARGET = auto()
 
 
 class Spell:
     def __init__(self, caster_level):
         self.caster_level = caster_level
-        self.tags = []
+        self.tags = set()
 
         self.setup()
 
@@ -38,3 +42,9 @@ class Spell:
 
     def harm_message(self, target):
         return ''
+
+    def animation_class(self):
+        return None
+
+    def color(self):
+        return None

@@ -11,3 +11,4 @@ class DeadEntityResult(Result):
             message = kill_monster(dead_entity)
 
         self.engine.message_log.add_message(message)
+        self.engine.render_tick()

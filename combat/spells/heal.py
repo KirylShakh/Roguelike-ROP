@@ -8,7 +8,7 @@ class Heal(Spell):
         self.level = 1
         self.value_die = 8
 
-        self.tags.extend([SpellTags.HEAL])
+        self.tags |= {SpellTags.HEAL, SpellTags.TARGET}
 
         self.cast_attribute = 'intelligence'
         self.affected_attribute = 'constitution'

@@ -13,7 +13,7 @@ class Confuse(Spell):
         self.level = 4
         self.value_die = 4
 
-        self.tags.extend([SpellTags.DAMAGE, SpellTags.MIND])
+        self.tags |= {SpellTags.DAMAGE, SpellTags.MIND, SpellTags.TARGET}
 
         self.cast_attribute = 'intelligence'
         self.damage_attribute = 'intelligence'

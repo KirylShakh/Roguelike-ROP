@@ -48,7 +48,7 @@ class Inventory(Component):
         results = []
 
         item_component = item_entity.item
-        if item_component.use_function is None:
+        if item_component.action_class is None:
             if item_entity.equippable:
                 results.append({'equip': item_entity})
             else:
@@ -57,8 +57,8 @@ class Inventory(Component):
             if item_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
                 results.append({'targeting': item_entity})
             else:
-                kwargs = {**item_component.function_args, **kwargs}
-                item_use_results = item_component.use_function(self.owner, **kwargs)
+                kwargs = {**item_component.action_args, **kwargs}
+                item_use_results = self.run_use_action(item_component.action_class, **kwargs)
 
                 for item_use_result in item_use_results:
                     if item_use_result.get('consumed'):
@@ -66,3 +66,21 @@ class Inventory(Component):
                 results.extend(item_use_results)
 
         return results
+
+    def run_use_action(self, action_class, **kwargs):
+        caster_level = kwargs.get('caster_level')
+        engine = kwargs.get('engine')
+        target_x = kwargs.get('target_x')
+        target_y = kwargs.get('target_y')
+        spell_class = kwargs.get('spell')
+
+        action_args = {}
+        if target_x is not None:
+            action_args['target_point'] = (target_x, target_y)
+        if spell_class is not None:
+            action_args['spell_class'] = spell_class
+        if caster_level is not None:
+            action_args['caster_level'] = caster_level
+
+        action = action_class(engine)
+        return action.run(self.owner, **action_args)

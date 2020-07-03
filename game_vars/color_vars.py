@@ -5,6 +5,7 @@ player = tcod.white
 
 lightning_arc = tcod.lightest_sky
 fireball_explosion = tcod.dark_orange
+explosion = tcod.light_orange
 
 forest = tcod.dark_green
 forest_bg = tcod.black
@@ -15,6 +16,7 @@ light_wall = tcod.Color(130, 110, 50)
 light_ground = tcod.Color(200, 180, 50)
 
 target_message = tcod.light_cyan
+error_message = tcod.red
 warning = tcod.yellow
 spell = tcod.orange
 

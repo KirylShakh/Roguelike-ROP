@@ -5,12 +5,18 @@ from entity_objects.entity import Entity
 from components.equippable import Equippable
 from components.equipment import EquipmentSlots
 from components.item import Item
-from item_functions import heal, cast_lightning, cast_fireball, cast_confuse
 from render_objects.render_order import RenderOrder
 from game_messages import Message
 from map_objects.char_object import Char
 from random_utils import random_choice_from_dict, from_dungeon_level, weight_factor
 from game_vars import color_vars, message_vars
+
+from action_processing.combat.cast_scroll_action import CastScrollAction
+from action_processing.combat.drink_potion_action import DrinkPotionAction
+from combat.spells.confuse import Confuse
+from combat.spells.fireball import Fireball
+from combat.spells.heal import Heal
+from combat.spells.lightning_bolt import LightningBolt
 
 
 # [max_number, dungeon_level]
@@ -23,7 +29,8 @@ items = {
         'color': tcod.violet,
         'weight_factor': 35,
         'item_component': {
-            'use_function': heal,
+            'action': DrinkPotionAction,
+            'spell': Heal,
             'caster_level': 1,
         },
     },
@@ -63,7 +70,8 @@ items = {
         'color': tcod.light_pink,
         'weight_factor': [[10, 2]],
         'item_component': {
-            'use_function': cast_confuse,
+            'action': CastScrollAction,
+            'spell': Confuse,
             'caster_level': 4,
             'targeting': True,
             'targeting_message': Message(message_vars.confuse_target_message, color_vars.target_message),
@@ -75,7 +83,8 @@ items = {
         'color': tcod.yellow,
         'weight_factor': [[25, 4]],
         'item_component': {
-            'use_function': cast_lightning,
+            'action': CastScrollAction,
+            'spell': LightningBolt,
             'caster_level': 1,
         },
     },
@@ -85,7 +94,8 @@ items = {
         'color': tcod.red,
         'weight_factor': [[25, 6]],
         'item_component': {
-            'use_function': cast_fireball,
+            'action': CastScrollAction,
+            'spell': Fireball,
             'targeting': True,
             'targeting_message': Message(message_vars.fireball_target_message, color_vars.target_message),
             'caster_level': 5,

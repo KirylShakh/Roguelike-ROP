@@ -1,6 +1,7 @@
 from random import randint
 
 from combat.spells.spell import Spell, SpellTags
+from action_processing.animations.lightning_animation import LightningAnimation
 
 class LightningBolt(Spell):
     def setup(self):
@@ -9,7 +10,7 @@ class LightningBolt(Spell):
         self.value_die = 6
         self.maximum_range = 5
 
-        self.tags.extend([SpellTags.DAMAGE, SpellTags.ELEMENTAL, SpellTags.ELECTRICITY])
+        self.tags |= {SpellTags.DAMAGE, SpellTags.ELEMENTAL, SpellTags.ELECTRICITY, SpellTags.AUTO_TARGET}
 
         self.cast_attribute = 'intelligence'
         self.damage_attribute = 'constitution'
@@ -19,3 +20,6 @@ class LightningBolt(Spell):
 
     def harm_message(self, target):
         return 'A lightning bolt strikes the {0} with a loud thunder for {1} damage'.format(target.name, self.damage)
+
+    def animation_class(self):
+        return LightningAnimation
