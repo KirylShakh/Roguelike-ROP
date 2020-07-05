@@ -77,6 +77,8 @@ def handle_player_turn(event):
         # test
         if event.sym == tcod.event.K_f:
             return {'cast_fireball': True}
+        elif event.sym == tcod.event.K_a:
+            return {'chop_attack': True}
 
     return {}
 

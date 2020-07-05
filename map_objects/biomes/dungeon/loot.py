@@ -10,6 +10,7 @@ from game_messages import Message
 from map_objects.char_object import Char
 from random_utils import random_choice_from_dict, from_dungeon_level, weight_factor
 from game_vars import color_vars, message_vars
+from combat.attacks.damage_types import DamageTypes
 
 from action_processing.combat.cast_scroll_action import CastScrollAction
 from action_processing.combat.drink_potion_action import DrinkPotionAction
@@ -42,6 +43,7 @@ items = {
         'equippable_component': {
             'slot': EquipmentSlots.MAIN_HAND,
             'power_bonus': 2,
+            'damage_types': {DamageTypes.PIERCING, DamageTypes.SLASHING},
         },
     },
     'sword': {
@@ -52,6 +54,7 @@ items = {
         'equippable_component': {
             'slot': EquipmentSlots.MAIN_HAND,
             'power_bonus': 3,
+            'damage_types': {DamageTypes.PIERCING, DamageTypes.SLASHING},
         },
     },
     'shield': {
@@ -62,6 +65,7 @@ items = {
         'equippable_component': {
             'slot': EquipmentSlots.OFF_HAND,
             'defense_bonus': 1,
+            'damage_types': {DamageTypes.BLUDGEONING},
         },
     },
     'confuse_scroll': {

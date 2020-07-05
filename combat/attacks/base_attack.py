@@ -1,4 +1,5 @@
 from game_messages import Message
+from combat.attacks.damage_types import DamageTypes
 
 
 class BaseAttack:
@@ -30,6 +31,12 @@ class BaseAttack:
         return max(self.damage_amount - target.fighter.defense, 0)
 
     def apply_status(self, target, attacked_attribute, damage_amount):
+        if attacked_attribute.name == 'constitution' and damage_amount >= (attacked_attribute.value + damage_amount) // 2:
+            result = {'heavy_damage_attack': True}
+            weapon_types = self.attacker.fighter.damage_types()
+            if DamageTypes.SLASHING in weapon_types:
+                result['chop_attack'] = True
+            return [result]
         return []
 
     # main method for applying damage and status effects to the target.normally should not be overriden

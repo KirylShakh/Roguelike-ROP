@@ -1,4 +1,5 @@
 from action_processing.actions.action import Action
+from action_processing.combat.simple_attack_action import SimpleAttackAction
 from game_states import GameStates
 from player_locations import PlayerLocations
 from map_objects.world.biomes import Biomes
@@ -35,8 +36,8 @@ class MoveAction(Action):
                 target = self.engine.entities.get_blocking_at_location(destination_x, destination_y)
 
                 if target:
-                    attack_results = player.fighter.attack(target)
-                    self.engine.player_turn_results.extend(attack_results)
+                    attack_action = SimpleAttackAction(self.engine)
+                    self.engine.player_turn_results.extend(attack_action.run(target))
                 else:
                     player.move(dx, dy)
                     self.engine.regulatory_flags.add('fov_recompute')

@@ -19,10 +19,13 @@ target_message = tcod.light_cyan
 error_message = tcod.red
 warning = tcod.yellow
 spell = tcod.orange
+crit_message = tcod.light_red
 
 soil = tcod.black
 wood = tcod.Color(128, 64, 0)
 dirt_road = tcod.Color(145, 90, 36)
+body = tcod.amber
+blood = tcod.dark_red
 
 def mutated_color(color, mult=0.5):
     return tcod.Color(

@@ -30,6 +30,7 @@ from action_processing.actions.wait_action import WaitAction
 from action_processing.actions.world_action import WorldAction
 
 from action_processing.actions.cast_fireball_action import CastFireballAction
+from action_processing.combat.chop_action import ChopAction
 
 from action_processing.results.dead_entity_result import DeadEntityResult
 from action_processing.results.equip_result import EquipResult
@@ -238,6 +239,10 @@ class Engine:
                     if event.get('cast_fireball'):
                         action = CastFireballAction(self)
                         action.run()
+
+                    if event.get('chop_attack'):
+                        action = ChopAction(self)
+                        self.player_turn_results.extend(action.run())
 
                 for player_turn_result in self.player_turn_results:
                     if player_turn_result.get('message'):
