@@ -9,6 +9,5 @@ class GameStates(Enum):
     TARGETING = auto()
     LEVEL_UP = auto()
     CHARACTER_SCREEN = auto()
-    ANIMATING = auto()
     SHOW_LOCATIONS = auto()
     EXIT = auto()

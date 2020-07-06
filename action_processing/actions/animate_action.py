@@ -21,6 +21,4 @@ class AnimateAction(Action):
             self.engine.render_tick()
             time.sleep(0.15)
 
-        self.engine.game_state = self.engine.previous_game_state
-
         return results

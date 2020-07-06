@@ -19,6 +19,7 @@ target_message = tcod.light_cyan
 error_message = tcod.red
 warning = tcod.yellow
 spell = tcod.orange
+dead_entity_message = tcod.orange
 crit_message = tcod.light_red
 
 soil = tcod.black

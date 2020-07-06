@@ -1,14 +1,24 @@
+from game_vars import color_vars
+from game_messages import Message
+from game_states import GameStates
 from action_processing.results.result import Result
-from death_functions import kill_monster, kill_player
+from action_processing.animations.dying_animation import DyingAnimation
 
 
 class DeadEntityResult(Result):
     def run(self, dead_entity):
         player = self.engine.entities.player
         if dead_entity == player:
-            message, self.engine.game_state = kill_player(player)
-        else:
-            message = kill_monster(dead_entity)
+            player.char = '%'
+            player.color = color_vars.blood
 
-        self.engine.message_log.add_message(message)
-        self.engine.render_tick()
+            self.engine.game_state = GameStates.PLAYER_DEAD
+            self.engine.message_log.add_message(Message('You died', color=color_vars.crit_message))
+            self.engine.render_tick()
+        else:
+            dead_entity.blocks = False
+            dead_entity.fighter = None
+            dead_entity.ai = None
+
+            animation = DyingAnimation(self.engine, dead_entity)
+            self.engine.animations.append(animation)

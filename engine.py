@@ -299,7 +299,7 @@ class Engine:
         action = WorldAction(self)
         action.run()
 
-        if self.game_state == GameStates.ANIMATING:
+        if len(self.animations) > 0:
             self.process_animations()
 
     def on_turn_end(self):

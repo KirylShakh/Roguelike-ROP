@@ -2,9 +2,9 @@ from action_processing.actions.action import Action
 from game_states import GameStates
 from player_locations import PlayerLocations
 from game_messages import Message
-from death_functions import kill_monster, kill_player
 from map_objects.world.biomes import Biomes
 
+from action_processing.results.dead_entity_result import DeadEntityResult
 from action_processing.animations.charge_animation import ChargeAnimation
 
 
@@ -47,31 +47,13 @@ class WorldAction(Action):
                         self.engine.animations.append(animation)
 
                     if dead_entity:
-                        if dead_entity == player:
-                            message, self.engine.game_state = kill_player(player)
-                        else:
-                            message = kill_monster(dead_entity)
-
-                        self.engine.message_log.add_message(message)
+                        action = DeadEntityResult(self.engine)
+                        action.run(dead_entity)
 
                         if self.engine.game_state == GameStates.PLAYER_DEAD:
-                            self.play_animations_for_dead_player()
                             break
 
                 if self.engine.game_state == GameStates.PLAYER_DEAD:
-                    self.play_animations_for_dead_player()
                     break
         else:
-            if self.need_play_animations():
-                self.engine.game_state = GameStates.ANIMATING
-                self.engine.previous_game_state = GameStates.PLAYERS_TURN
-            else:
-                self.engine.game_state = GameStates.PLAYERS_TURN
-
-    def need_play_animations(self):
-        return len(self.engine.animations) > 0
-
-    def play_animations_for_dead_player(self):
-        if self.need_play_animations():
-            self.engine.game_state = GameStates.ANIMATING
-            self.engine.previous_game_state = GameStates.PLAYER_DEAD
+            self.engine.game_state = GameStates.PLAYERS_TURN
