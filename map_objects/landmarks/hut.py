@@ -1,7 +1,7 @@
 import tcod
 
 from map_objects.landmarks.shed import Shed
-from map_objects.char_object import Char
+from entity_objects.static_entity import StaticEntity
 from game_vars import color_vars
 
 
@@ -9,8 +9,8 @@ class Hut(Shed):
     def __init__(self, name, parent=None):
         super().__init__(name, parent=parent)
 
-        self.bed_char = Char(char='-', color=color_vars.wood, name='Bed in {0}'.format(name))
-        self.table_char = Char(char='=', color=color_vars.wood, name='Table in {0}'.format(name))
+        self.bed_char = {'char': '-', 'color': color_vars.wood, 'name': 'Bed in {0}'.format(name)}
+        self.table_char = {'char': '=', 'color': color_vars.wood, 'name': 'Table in {0}'.format(name)}
 
     def make_objects(self):
         super().make_objects()
@@ -38,10 +38,9 @@ class Hut(Shed):
     def place(self, game_map):
         super().place(game_map)
 
-        for (x, y, char) in self.furniture:
-            game_map.tiles[x][y].blocked = False
-            game_map.tiles[x][y].block_sight = False
-            game_map.tiles[x][y].char = char
+        for (x, y, conf) in self.furniture:
+            game_map.tiles[x][y].unblock()
+            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **conf))
 
     def corner_wall_tile(self, tile):
         x, y = tile

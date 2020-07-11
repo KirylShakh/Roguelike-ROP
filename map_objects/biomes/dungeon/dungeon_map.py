@@ -89,8 +89,8 @@ class DungeonMap(BiomMap):
             up_stairs_y = new_y
 
         stairs_component = Stairs(self.owner.dungeon_level + 1)
-        down_stairs = Entity(down_stairs_x, down_stairs_y, '>', tcod.white,
-                                'Stairs down', render_order=RenderOrder.STAIRS,
+        down_stairs = Entity(down_stairs_x, down_stairs_y, char='>', color=tcod.white,
+                                name='Stairs down', render_order=RenderOrder.STAIRS,
                                 stairs=stairs_component)
         entities.append(down_stairs)
 
@@ -102,10 +102,18 @@ class DungeonMap(BiomMap):
             stairs_name = 'Stairs up'
 
         up_stairs_component = Stairs(self.owner.dungeon_level, direction=direction)
-        up_stairs = Entity(up_stairs_x, up_stairs_y, '<', tcod.white,
-                            stairs_name, render_order=RenderOrder.STAIRS,
+        up_stairs = Entity(up_stairs_x, up_stairs_y, char='<', color=tcod.white,
+                            name=stairs_name, render_order=RenderOrder.STAIRS,
                             stairs=up_stairs_component)
         entities.append(up_stairs)
+
+        for x in range(self.owner.width):
+            for y in range(self.owner.height):
+                tile = self.owner.tiles[x][y]
+                if 'blocked' in tile.regulatory_flags:
+                    tile.set_bg_color(color_vars.light_wall)
+                else:
+                    tile.set_bg_color(color_vars.light_ground)
 
     def place_player(self, player):
         player.x, player.y = self.player_start
@@ -126,27 +134,28 @@ class DungeonMap(BiomMap):
     # (bg_color, char, char_color)
     def tile_render_info(self, x, y, visible):
         tile = self.owner.tiles[x][y]
-        color = None
+        char_object = tile.top_char_object
+        bg_color = None
         fg_color = None
         char = None
 
         if visible:
-            if tile.blocked:
-                color = color_vars.light_wall
+            if 'blocked' in tile.regulatory_flags:
+                bg_color = tile.bg_color()
             else:
-                color = color_vars.light_ground
-                if tile.char:
-                    fg_color = tile.char.color
-                    char = tile.char.char
+                bg_color = tile.bg_color()
+                if char_object:
+                    fg_color = char_object.color
+                    char = char_object.char
 
-            tile.explored = True
-        elif tile.explored:
-            if tile.blocked:
-                color = color_vars.dark_wall
+            tile.regulatory_flags.add('explored')
+        elif 'explored' in tile.regulatory_flags:
+            if 'blocked' in tile.regulatory_flags:
+                bg_color = tile.bg_color_distant()
             else:
-                color = color_vars.dark_ground
-                if tile.char:
-                    fg_color = tile.char.distant_color
-                    char = tile.char.char
+                bg_color = tile.bg_color_distant()
+                if char_object:
+                    fg_color = char_object.distant_color
+                    char = char_object.char
 
-        return (color, char, fg_color)
+        return (bg_color, char, fg_color)

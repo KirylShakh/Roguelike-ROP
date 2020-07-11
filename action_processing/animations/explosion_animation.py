@@ -53,9 +53,7 @@ class ExplosionAnimation:
         return results
 
     def add_explosion_entity(self, x, y):
-        explosion = Entity(x, y, self.char,
-                                self.color, 'Explosion',
-                                render_order=RenderOrder.EFFECT)
+        explosion = Entity(x, y, char=self.char, color=self.color, name='Explosion', render_order=RenderOrder.EFFECT)
         self.explosion_entities.append(explosion)
         self.engine.entities.append(explosion)
 

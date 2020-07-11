@@ -4,8 +4,8 @@ import tcod
 
 from map_objects.landmarks.hut import Hut
 from map_objects.room import Room
-from map_objects.char_object import Char
 from map_objects.rectangle import Rect
+from entity_objects.static_entity import StaticEntity
 from game_vars import color_vars
 
 
@@ -13,8 +13,8 @@ class House(Hut):
     def __init__(self, name, parent=None):
         super().__init__(name, parent=parent)
 
-        self.chair_char = Char(char='_', color=color_vars.wood, name='Stool in {0}'.format(name))
-        self.bag_char = Char(char='&', color=color_vars.wood, name='Bag in {0}'.format(name))
+        self.chair_char = {'char': '_', 'color': color_vars.wood, 'name': 'Stool in {0}'.format(name)}
+        self.bag_char = {'char': '&', 'color': color_vars.wood, 'name': 'Bag in {0}'.format(name)}
 
     def init_constants(self):
         super().init_constants()
@@ -141,4 +141,5 @@ class House(Hut):
 
         for (x, y) in self.inner_doors:
             game_map.tiles[x][y].unblock()
-            game_map.tiles[x][y].char = self.door_char
+            game_map.tiles[x][y].clear_static_entities()
+            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **self.door_char))

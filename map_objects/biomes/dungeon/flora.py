@@ -2,7 +2,8 @@ import math
 import tcod
 from random import randint, choice
 
-from map_objects.char_object import Char
+from entity_objects.static_entity import StaticEntity
+from render_objects.render_order import RenderOrder
 from random_utils import random_choice_from_dict, weight_factor
 
 
@@ -27,20 +28,14 @@ class Flora:
         for _ in range(number_of_fungi):
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
-            if not dungeon.is_blocked(x, y) and not dungeon.tiles[x][y].char:
-                dungeon.tiles[x][y].char = self.fungi()
+            if not dungeon.is_blocked(x, y): # for now there can be many fungi in single tile
+                dungeon.tiles[x][y].place_static_entity(self.fungi(x, y))
 
-    def fungi(self):
+    def fungi(self, x, y):
         fungi_choices = weight_factor(fungi)
         fungi_choice = random_choice_from_dict(fungi_choices)
         plant_info = fungi[fungi_choice]
-
-        char = plant_info['char']
-        color = plant_info['color']
         name = 'Luminescent body of {0}'.format(plant_info['name'])
 
-        return Plant(char=char, color=color, name=name, base_name=plant_info['name'])
-
-class Plant(Char):
-    def __init__(self, char=None, color=None, name=None, base_name=None):
-        super(Plant, self).__init__(char=char, color=color, name=name, base_name=base_name)
+        return StaticEntity(x, y, char=plant_info['char'], color=plant_info['color'],
+                    name=name, base_name=plant_info['name'], render_order=RenderOrder.GROUND_FLORA)

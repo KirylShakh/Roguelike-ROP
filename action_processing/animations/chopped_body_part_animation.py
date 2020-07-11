@@ -1,6 +1,7 @@
 from random import randint, choice
 
 from entity_objects.entity import Entity
+from entity_objects.static_entity import StaticEntity
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
 from map_objects.path_functions import path_straight
@@ -32,8 +33,8 @@ class ChoppedBodyPartAnimation(BasicAnimation):
         if self.engine.world_map.current_dungeon.is_void(x, y) or self.engine.world_map.current_dungeon.is_blocked(x, y):
             x = self.body_part_owner.x
             y = self.body_part_owner.y
-        self.body_part = Entity(x, y, self.default_body_part_char, color_vars.body,
-                                body_part_name, render_order=RenderOrder.EFFECT)
+        self.body_part = Entity(x, y, char=self.default_body_part_char, color=color_vars.body,
+                                name=body_part_name, render_order=RenderOrder.EFFECT)
         self.engine.entities.append(self.body_part)
 
         self.animation_entities = []
@@ -43,7 +44,7 @@ class ChoppedBodyPartAnimation(BasicAnimation):
         if self.path_index >= len(self.path) or self.completed:
             return self.stop()
 
-        self.body_part.char = self.body_part_spinning_chars[self.spinning_index]
+        self.body_part.char.char = self.body_part_spinning_chars[self.spinning_index]
 
         self.spinning_index += 1
         if self.spinning_index == self.spinning_chars_len:
@@ -74,9 +75,17 @@ class ChoppedBodyPartAnimation(BasicAnimation):
     def complete(self):
         self.completed = True
         self.body_part.render_order = RenderOrder.SMALL_OBJECTS
-        self.body_part.char = self.default_body_part_char
+        self.body_part.char.char = self.default_body_part_char
+
+        self.body_part.char.bg_color = color_vars.blood_pool
+        self.body_part.char.regulatory_flags.add('bg_color_stacks')
+        self.engine.entities.remove(self.body_part)
+        tile = self.engine.world_map.current_dungeon.tiles[self.body_part.x][self.body_part.y]
+        tile.place_static_entity(self.body_part)
+        self.engine.regulatory_flags.add('fov_recompute')
+
         for blood_drop in self.animation_entities:
-            blood_drop.render_order = RenderOrder.SMALL_OBJECTS
+            blood_drop.render_order = RenderOrder.TINY_OBJECTS
         return []
 
     def stop_condition(self):
@@ -87,13 +96,15 @@ class ChoppedBodyPartAnimation(BasicAnimation):
 
     def handle_blood_path(self):
         blood_char = random_choice_from_dict(self.blood_chars)
-        blood_entity = Entity(self.body_part.x, self.body_part.y, blood_char, color_vars.blood,
-                            'Drop of blood', render_order=RenderOrder.EFFECT)
+        blood_entity = StaticEntity(self.body_part.x, self.body_part.y,
+                                char=blood_char, color=color_vars.blood,
+                                name='Drop of blood', render_order=RenderOrder.EFFECT)
+        self.engine.world_map.current_dungeon.tiles[self.body_part.x][self.body_part.y].place_static_entity(blood_entity)
         self.animation_entities.append(blood_entity)
-        self.engine.entities.append(blood_entity)
         if len(self.animation_entities) > self.trail_length:
-            self.engine.entities.remove(self.animation_entities[0])
-            self.animation_entities.pop(0)
+            entity_to_remove = self.animation_entities.pop(0)
+            tile = self.engine.world_map.current_dungeon.tiles[entity_to_remove.x][entity_to_remove.y]
+            tile.remove_static_entity(entity_to_remove)
 
     def calculate_path(self):
         min_distance, max_distance = (2, 5)

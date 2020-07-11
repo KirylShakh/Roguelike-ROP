@@ -3,7 +3,8 @@ import tcod
 from random_utils import random_choice_from_dict
 
 from map_objects.landmarks.landmark import Landmark
-from map_objects.char_object import Char
+from entity_objects.static_entity import StaticEntity
+from render_objects.render_order import RenderOrder
 from game_vars import color_vars
 
 
@@ -12,10 +13,10 @@ class KitchenGarden(Landmark):
         super().__init__(name, parent=parent)
 
         self.plant_chars = {
-            'turnip': Char(char='t', color=tcod.light_yellow, name='Turnip sprout'),
-            'potato': Char(char='p', color=tcod.light_green, name='Potato sprout'),
-            'tomato': Char(char='p', color=tcod.light_red, name='Tomato sprout'),
-            'beetroot': Char(char='b', color=tcod.dark_red, name='Beetroot sprout'),
+            'turnip': {'char': 't', 'color': tcod.light_yellow, 'name': 'Turnip sprout'},
+            'potato': {'char': 'p', 'color': tcod.light_green, 'name':'Potato sprout'},
+            'tomato': {'char': 'p', 'color': tcod.light_red, 'name': 'Tomato sprout'},
+            'beetroot': {'char': 'b', 'color': tcod.dark_red, 'name': 'Beetroot sprout'},
         }
 
     def init_constants(self):
@@ -48,12 +49,17 @@ class KitchenGarden(Landmark):
         if self.rect.h < self.rect.w:
             for y in range(self.rect.y1, self.rect.y2):
                 for x in range(self.rect.x1, self.rect.x2):
-                    game_map.tiles[x][y].char = self.plant_chars[self.beds[bed]]
-                    game_map.tiles[x][y].cultivated = True
+                    self.place_plant_on_tile(x, y, game_map.tiles[x][y], bed)
                 bed += 1
         else:
             for x in range(self.rect.x1, self.rect.x2):
                 for y in range(self.rect.y1, self.rect.y2):
-                    game_map.tiles[x][y].char = self.plant_chars[self.beds[bed]]
-                    game_map.tiles[x][y].cultivated = True
+                    self.place_plant_on_tile(x, y, game_map.tiles[x][y], bed)
                 bed += 1
+
+    def place_plant_on_tile(self, x, y, tile, bed):
+        plant = self.plant_chars[self.beds[bed]]
+        plant_entity = StaticEntity(x, y, render_order=RenderOrder.GROUND_FLORA, **plant)
+
+        tile.place_static_entity(plant_entity)
+        tile.regulatory_flags.add('cultivated')

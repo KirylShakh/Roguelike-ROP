@@ -23,13 +23,10 @@ class GameMap:
         self.entities = None
 
     def initialize_tiles(self):
-        return [[Tile(self.map_creator.default_tile_blocked) for y in range(self.height)] for x in range(self.width)]
+        return [[Tile(blocked=self.map_creator.default_tile_blocked) for y in range(self.height)] for x in range(self.width)]
 
     def is_blocked(self, x, y):
-        if self.tiles[x][y].blocked:
-            return True
-
-        return False
+        return 'blocked' in self.tiles[x][y].regulatory_flags
 
     def make_map(self, entities, moving_down=True):
         if self.visited:
@@ -80,3 +77,6 @@ class GameMap:
 
     def path_straight(self, src_x, src_y, dst_x, dst_y):
         return path_straight(src_x, src_y, dst_x, dst_y)
+
+    def tile_render_info(self, x, y, visible):
+        return self.map_creator.tile_render_info(x, y, visible)

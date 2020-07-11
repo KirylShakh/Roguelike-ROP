@@ -18,12 +18,12 @@ class WorldAction(Action):
     def enemy_action_on_world_map(self):
         player = self.engine.entities.player
         tile = self.engine.world_map.tiles[player.x][player.y]
-        if not tile.visited:
+        if 'visited' not in tile.regulatory_flags:
             if tile.biom == Biomes.FOREST:
                 self.engine.message_log.add_message(Message('You traverse empty lifeless silent forest'))
             elif tile.biom == Biomes.DUNGEON:
                 self.engine.message_log.add_message(Message('There are bottomless ruins here'))
-            tile.visited = True
+            tile.regulatory_flags.add('visited')
         self.engine.game_state = GameStates.PLAYERS_TURN
 
     def enemy_action_in_dungeon(self):

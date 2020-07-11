@@ -47,7 +47,7 @@ def create_player():
     level_component = Level()
     equipment_component = Equipment()
     caster_component = Caster(1)
-    return Entity(0, 0, player_vars.char, color_vars.player, player_vars.name, blocks=True,
+    return Entity(0, 0, char=player_vars.char, color=color_vars.player, name=player_vars.name, blocks=True,
                     render_order=RenderOrder.ACTOR, fighter=fighter_component,
                     inventory=inventory_component, level=level_component,
                     equipment=equipment_component, attributes=attributes, caster=caster_component)

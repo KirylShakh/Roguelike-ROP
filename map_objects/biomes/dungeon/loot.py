@@ -133,5 +133,5 @@ class Loot:
         if item.get('equippable_component'):
             equippable_component = Equippable(**item['equippable_component'])
 
-        return Entity(x, y, item['char'], item['color'], item['name'],
+        return Entity(x, y, char=item['char'], color=item['color'], name=item['name'],
                     render_order=RenderOrder.ITEM, item=item_component, equippable=equippable_component)

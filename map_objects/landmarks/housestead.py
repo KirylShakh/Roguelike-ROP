@@ -6,7 +6,7 @@ from map_objects.landmarks.house import House
 from map_objects.landmarks.hut import Hut
 from map_objects.landmarks.shed import Shed
 from map_objects.landmarks.kitchen_garden import KitchenGarden
-from map_objects.char_object import Char
+from entity_objects.static_entity import StaticEntity
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
 
@@ -15,9 +15,9 @@ class Housestead(LandmarkArea):
     def __init__(self, name):
         super().__init__(name)
 
-        self.road_char = Char(char='+', color=color_vars.dirt_road, name='Road in {0}'.format(name))
-        self.fence_char = Char(char='#', color=color_vars.dirt_road, name='Fence in {0}'.format(name))
-        self.gate_char = Char(char='/', color=color_vars.dirt_road, name='Gates in {0}'.format(name))
+        self.road_char = {'char': '+', 'color': color_vars.dirt_road, 'name': 'Road in {0}'.format(name)}
+        self.fence_char = {'char': '#', 'color': color_vars.dirt_road, 'name': 'Fence in {0}'.format(name)}
+        self.gate_char = {'char': '/', 'color': color_vars.dirt_road, 'name': 'Gates in {0}'.format(name)}
 
     def make_landmark_objects(self):
         # family house
@@ -59,8 +59,8 @@ class Housestead(LandmarkArea):
         fence_tiles.remove(back_gate)
 
         self.place_mozaic_objects(fence_tiles, game_map, self.fence_char, 99, True)
-        game_map.tiles[main_gate[0]][main_gate[1]].char = self.gate_char
-        game_map.tiles[back_gate[0]][back_gate[1]].char = self.gate_char
+        game_map.tiles[main_gate[0]][main_gate[1]].place_static_entity(StaticEntity(main_gate[0], main_gate[1], **self.gate_char))
+        game_map.tiles[back_gate[0]][back_gate[1]].place_static_entity(StaticEntity(back_gate[0], back_gate[1], **self.gate_char))
 
         self.fence_tiles = fence_tiles
         self.main_gate = main_gate
@@ -98,7 +98,9 @@ class Housestead(LandmarkArea):
         return [[-1 if self.can_be_road(game_map, x + self.rect.x1, y + self.rect.y1) else -2 for y in range(self.rect.h)] for x in range(self.rect.w)]
 
     def can_be_road(self, game_map, x, y):
-        return not game_map.is_blocked(x, y) and not game_map.tiles[x][y].indoor and not game_map.tiles[x][y].cultivated
+        return (not game_map.is_blocked(x, y)
+                and 'indoor' not in game_map.tiles[x][y].regulatory_flags
+                and 'cultivated' not in game_map.tiles[x][y].regulatory_flags)
 
     def find_path_in_area(self, start_tile, end_tile, area_map):
         x, y = end_tile
@@ -166,9 +168,11 @@ class Housestead(LandmarkArea):
 
         for (x, y) in obj_list:
             if random_choice_from_dict(place_choices) == 'place':
-                game_map.tiles[x][y].char = obj_char
-                game_map.tiles[x][y].blocked = blocked
-                game_map.tiles[x][y].block_sight = block_sight
+                game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **obj_char))
+                if blocked:
+                    game_map.tiles[x][y].regulatory_flags.add('blocked')
+                if block_sight:
+                    game_map.tiles[x][y].regulatory_flags.add('block_sight')
 
     def create_on(self, game_map):
         super().create_on(game_map)

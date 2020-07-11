@@ -1,7 +1,8 @@
 import tcod
 from random import randint, choice
 
-from map_objects.char_object import Char
+from entity_objects.static_entity import StaticEntity
+from render_objects.render_order import RenderOrder
 from random_utils import random_choice_from_dict, weight_factor
 
 
@@ -180,17 +181,17 @@ class Flora:
         else:
             name = 'Giant trunk of {0}'.format(base_name)
 
-        return Tree(color=trees[tree_key]['color'], name=name, base_name=base_name, diameter=diameter)
+        return Tree(bg_color=trees[tree_key]['color'], name=name, base_name=base_name, diameter=diameter)
 
-    def get_tile_plant(self, tile_shadowed):
+    def get_tile_plant(self, x, y, tile_shadowed):
         plant_choice = self.choose_plant(tile_shadowed)
 
         if one_tile_plants.get(plant_choice):
-            return self.grass_plant(plant_choice, tile_shadowed)
+            return self.grass_plant(x, y, plant_choice, tile_shadowed)
         elif fungi.get(plant_choice):
-            return self.fungi(plant_choice)
+            return self.fungi(x, y, plant_choice)
         else:
-            return self.sapling(plant_choice, tile_shadowed)
+            return self.sapling(x, y, plant_choice, tile_shadowed)
 
     def choose_plant(self, tile_shadowed):
         plant_choices = one_tile_plant_choices.copy()
@@ -204,7 +205,7 @@ class Flora:
 
         return random_choice_from_dict(plant_choices)
 
-    def grass_plant(self, plant_choice, tile_shadowed):
+    def grass_plant(self, x, y, plant_choice, tile_shadowed):
         plant_info = one_tile_plants[plant_choice]
 
         char = plant_info['char']
@@ -221,25 +222,26 @@ class Flora:
         if not tile_shadowed:
             name += ' on a sunny glade'
 
-        return Plant(char=char, color=color, name=name, base_name=base_name)
+        return StaticEntity(x, y, char=char, color=color, name=name, base_name=base_name, render_order=RenderOrder.GROUND_FLORA)
 
-    def fungi(self, plant_choice):
+    def fungi(self, x, y, plant_choice):
         plant_info = fungi[plant_choice]
 
         char = plant_info['char']
         color = plant_info['color']
         name = 'Fruiting body of {0}'.format(plant_info['name'])
 
-        return Plant(char=char, color=color, name=name, base_name=plant_info['name'])
+        return StaticEntity(x, y, char=char, color=color, name=name, base_name=plant_info['name'],
+                            render_order=RenderOrder.GROUND_FLORA)
 
-    def sapling(self, char, tile_shadowed):
+    def sapling(self, x, y, char, tile_shadowed):
         color = choice(saplings_colors)
         base_name, name = self.sapling_name(char)
 
         if not tile_shadowed:
             name += ' on a sunny glade'
 
-        return Plant(char=char, color=color, name=name, base_name=base_name)
+        return StaticEntity(x, y, char=char, color=color, name=name, base_name=base_name, render_order=RenderOrder.GROUND_FLORA)
 
     def sapling_name(self, sapling):
         primary_tree = trees[self.primary]['name']
@@ -255,15 +257,12 @@ class Flora:
 
         return names[sapling]
 
-class Tree(Char):
-    def __init__(self, char=None, color=None, name=None, base_name=None, diameter=1):
-        super(Tree, self).__init__(char=char, color=color, name=name, base_name=base_name)
+class Tree(StaticEntity):
+    def __init__(self, char=None, color=None, bg_color=None, name=None, base_name=None, diameter=1):
+        super().__init__(-1, -1, char=char, color=color, bg_color=bg_color, name=name, base_name=base_name,
+                            blocks=True, render_order=RenderOrder.GROUND_FLORA)
 
         self.diameter = diameter
 
     def set_trunk(self, trunk):
         self.trunk = trunk
-
-class Plant(Char):
-    def __init__(self, char=None, color=None, name=None, base_name=None):
-        super(Plant, self).__init__(char=char, color=color, name=name, base_name=base_name)

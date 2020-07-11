@@ -10,4 +10,5 @@ level_up_width = 40
 character_screen_width = 40
 character_screen_height = 30
 
+location_list_title = 'Available locations'
 location_list_width = 60

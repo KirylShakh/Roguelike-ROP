@@ -3,6 +3,7 @@ import tcod
 
 from components.item import Item
 from render_objects.render_order import RenderOrder
+from entity_objects.static_entity import StaticEntity
 
 from components.attributes.strength import Strength
 from components.attributes.dexterity import Dexterity
@@ -11,17 +12,13 @@ from components.attributes.intelligence import Intelligence
 from components.attributes.wisdom import Wisdom
 from components.attributes.charisma import Charisma
 
-class Entity:
-    def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE,
+class Entity(StaticEntity):
+    def __init__(self, x, y, char=None, color=None, bg_color=None, name=None, base_name=None,
+                blocks=False, render_order=RenderOrder.CORPSE,
                 fighter=None, ai=None, item=None, inventory=None, stairs=None, level=None,
                 equippable=None, equipment=None, attributes=None, caster=None):
-        self.x = x
-        self.y = y
-        self.char = char
-        self.color = color
-        self.name = name
-        self.blocks = blocks
-        self.render_order = render_order
+        super().__init__(x, y, char=char, color=color, bg_color=bg_color, name=name, base_name=base_name,
+                        blocks=blocks, render_order=render_order)
 
         self.fighter = fighter
         self.ai = ai
@@ -100,8 +97,9 @@ class Entity:
         # Scan the current map each turn and set all the walls as unwalkable
         for y1 in range(game_map.height):
             for x1 in range(game_map.width):
-                tcod.map_set_properties(fov, x1, y1, not game_map.tiles[x1][y1].block_sight,
-                                           not game_map.tiles[x1][y1].blocked)
+                tcod.map_set_properties(fov, x1, y1,
+                                        'block_sight' not in game_map.tiles[x1][y1].regulatory_flags,
+                                        'blocked' not in game_map.tiles[x1][y1].regulatory_flags)
 
         # Scan all the objects to see if there are objects that must be navigated around
         # Check also that the object isn't self or the target (so that the start and the end points are free)

@@ -34,27 +34,20 @@ class Renderer:
         if fov_recompute:
             for y in range(world_map.height):
                 for x in range(world_map.width):
-                    tile = world_map.tiles[x][y]
-                    visible = fov_map.fov[x][y]
+                    bg_color, char, fg_color = world_map.tile_render_info(x, y, fov_map.fov[x][y])
 
-                    if visible:
-                        tcod.console_set_char_background(self.con, x, y, tile.bg_color,
-                                                            tcod.BKGND_SET)
-                        self.con.default_fg = tile.color
-                        tcod.console_put_char(self.con, x, y, tile.char, tcod.BKGND_NONE)
-                        tile.explored = True
-                    elif tile.explored:
-                        tcod.console_set_char_background(self.con, x, y, tile.distant_bg_color,
-                                                            tcod.BKGND_SET)
-                        self.con.default_fg = tile.distant_color
-                        tcod.console_put_char(self.con, x, y, tile.char, tcod.BKGND_NONE)
+                    if bg_color:
+                        tcod.console_set_char_background(self.con, x, y, bg_color, tcod.BKGND_SET)
+                    if char and fg_color:
+                        self.con.default_fg = fg_color
+                        tcod.console_put_char(self.con, x, y, char, tcod.BKGND_NONE)
 
         entities_in_render_order = sorted(entities.all, key=lambda x: x.render_order.value)
         for entity in entities_in_render_order:
             visible = fov_map.fov[entity.x][entity.y]
             if visible:
-                self.con.default_fg = entity.color
-                tcod.console_put_char(self.con, entity.x, entity.y, entity.char, tcod.BKGND_NONE)
+                self.con.default_fg = entity.char.color
+                tcod.console_put_char(self.con, entity.x, entity.y, entity.char.char, tcod.BKGND_NONE)
 
         self.con.blit(self.root)
 
@@ -65,7 +58,7 @@ class Renderer:
         self.render_menus(entities.player, game_state, world_map=world_map)
 
     def render_dungeon(self, entities, game_map, fov_map, fov_recompute,
-                    message_log, entities_under_mouse, game_state):
+                    message_log, whats_under_mouse, game_state):
         if fov_recompute:
             self.render_lit_map(game_map, fov_map)
 
@@ -77,14 +70,14 @@ class Renderer:
 
         self.panel.default_bg = tcod.black
         self.panel.clear()
-        self.render_hud(entities.player, game_map, message_log, entities_under_mouse)
+        self.render_hud(entities.player, game_map, message_log, whats_under_mouse)
 
         self.render_menus(entities.player, game_state)
 
     def render_lit_map(self, game_map, fov_map):
         for y in range(game_map.height):
             for x in range(game_map.width):
-                bg_color, char, char_color = game_map.map_creator.tile_render_info(x, y, fov_map.fov[x][y])
+                bg_color, char, char_color = game_map.tile_render_info(x, y, fov_map.fov[x][y])
                 if bg_color:
                     tcod.console_set_char_background(self.con, x, y, bg_color, tcod.BKGND_SET)
                 if char and char_color:
@@ -124,18 +117,17 @@ class Renderer:
             character_screen(player, menu_vars.character_screen_width,
                     menu_vars.character_screen_height, self)
         elif game_state == GameStates.SHOW_LOCATIONS:
-            header = 'Available locations'
             tile = world_map.tiles[player.x][player.y]
-            locations_menu(header, menu_vars.location_list_width, tile.locations, self)
+            locations_menu(menu_vars.location_list_title, menu_vars.location_list_width, tile.locations, self)
 
     def clear_all(self, entities):
         for entity in entities.all:
             self.clear_entity(entity)
 
     def draw_entity(self, entity, fov_map, game_map):
-        if fov_map.fov[entity.x][entity.y] or (entity.stairs and game_map.tiles[entity.x][entity.y].explored):
-            self.con.default_fg = entity.color
-            tcod.console_put_char(self.con, entity.x, entity.y, entity.char, tcod.BKGND_NONE)
+        if fov_map.fov[entity.x][entity.y] or (entity.stairs and 'explored' in game_map.tiles[entity.x][entity.y].regulatory_flags):
+            self.con.default_fg = entity.char.color
+            tcod.console_put_char(self.con, entity.x, entity.y, entity.char.char, tcod.BKGND_NONE)
 
     def clear_entity(self, entity):
         tcod.console_put_char(self.con, entity.x, entity.y, ' ', tcod.BKGND_NONE)

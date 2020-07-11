@@ -1,7 +1,7 @@
 import tcod
 
 from map_objects.landmarks.chapel import Chapel
-from map_objects.char_object import Char
+from entity_objects.static_entity import StaticEntity
 from game_vars import color_vars
 
 
@@ -9,8 +9,8 @@ class Shrine(Chapel):
     def __init__(self, name, parent=None):
         super().__init__(name, parent=parent)
 
-        self.vertical_bench_char = Char(char='|', color=color_vars.wood, name='Small bench')
-        self.horizontal_bench_char = Char(char='-', color=color_vars.wood, name='Small bench')
+        self.vertical_bench_char = {'char': '|', 'color': color_vars.wood, 'name': 'Small bench'}
+        self.horizontal_bench_char = {'char': '-', 'color': color_vars.wood, 'name': 'Small bench'}
 
     def init_constants(self):
         super().init_constants()
@@ -112,6 +112,6 @@ class Shrine(Chapel):
 
         bench_char, bench_tiles = self.benches
         for (x, y) in bench_tiles:
-            game_map.tiles[x][y].blocked = True
-            game_map.tiles[x][y].block_sight = False
-            game_map.tiles[x][y].char = bench_char
+            game_map.tiles[x][y].regulatory_flags.add('blocked')
+            game_map.tiles[x][y].regulatory_flags.discard('block_sight')
+            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **bench_char))

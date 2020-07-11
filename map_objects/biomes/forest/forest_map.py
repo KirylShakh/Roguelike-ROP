@@ -5,7 +5,6 @@ from map_objects.biomes.biom_map import BiomMap
 from map_objects.rectangle import Rect
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
-from map_objects.char_object import Char
 from map_objects.biomes.forest.flora import Flora
 from map_objects.biomes.forest.fauna import Fauna
 
@@ -151,9 +150,12 @@ class ForestMap(BiomMap):
                 self.make_tree_tile(x, y, tree)
 
     def make_tree_tile(self, x, y, tree):
+        tree.x = x
+        tree.y = y
+
         tile = self.owner.tiles[x][y]
         tile.block()
-        tile.char = tree
+        tile.place_static_entity(tree)
 
     def calculate_crowns(self):
         self.shadowed_tiles = [[False for y in range(self.owner.height)] for x in range(self.owner.width)]
@@ -176,44 +178,38 @@ class ForestMap(BiomMap):
     def place_grass(self):
         for x in range(self.owner.width):
             for y in range(self.owner.height):
-                if not self.owner.is_blocked(x, y) and not self.owner.tiles[x][y].char:
-                    self.owner.tiles[x][y].char = self.flora.get_tile_plant(self.shadowed_tiles[x][y])
+                if not self.owner.is_blocked(x, y) and not self.owner.tiles[x][y].static_entities:
+                    self.owner.tiles[x][y].place_static_entity(self.flora.get_tile_plant(x, y, self.shadowed_tiles[x][y]))
 
     # (bg_color, char, char_color)
     def tile_render_info(self, x, y, visible):
+        tile = self.owner.tiles[x][y]
         bg_color = color_vars.soil
         char = None
         char_color = None
 
         if visible:
             if self.owner.is_blocked(x, y):
-                if self.owner.tiles[x][y].char.char:
-                    char_obj = self.owner.tiles[x][y].char
-                    char, char_color = (char_obj.char, char_obj.shadow_color)
-                else:
-                    bg_color = self.owner.tiles[x][y].char.color
+                if tile.top_char_object:
+                    char, char_color = (tile.top_char_object.char, tile.top_char_object.shadow_color)
             else:
-                char_obj = self.owner.tiles[x][y].char
-
                 if self.shadowed_tiles[x][y]:
-                    char, char_color = (char_obj.char, char_obj.shadow_color)
+                    char, char_color = (tile.top_char_object.char, tile.top_char_object.shadow_color)
                 else:
-                    char, char_color = (char_obj.char, char_obj.color)
+                    char, char_color = (tile.top_char_object.char, tile.top_char_object.color)
+            bg_color = tile.bg_color()
 
-            self.owner.tiles[x][y].explored = True
-        elif self.owner.tiles[x][y].explored:
+            tile.regulatory_flags.add('explored')
+        elif 'explored' in tile.regulatory_flags:
             if self.owner.is_blocked(x, y):
-                if self.owner.tiles[x][y].char.char:
-                    char_obj = self.owner.tiles[x][y].char
-                    char, char_color = (char_obj.char, char_obj.distant_shadow_color)
-                else:
-                    bg_color = self.owner.tiles[x][y].char.distant_color
+                if tile.top_char_object:
+                    char, char_color = (tile.top_char_object.char, tile.top_char_object.distant_shadow_color)
+                bg_color = tile.bg_color_distant()
             else:
-                char_obj = self.owner.tiles[x][y].char
-
                 if self.shadowed_tiles[x][y]:
-                    char, char_color = (char_obj.char, char_obj.distant_shadow_color)
+                    char, char_color = (tile.top_char_object.char, tile.top_char_object.distant_shadow_color)
                 else:
-                    char, char_color = (char_obj.char, char_obj.distant_color)
+                    char, char_color = (tile.top_char_object.char, tile.top_char_object.distant_color)
+            bg_color = tile.bg_color_distant()
 
         return (bg_color, char, char_color)

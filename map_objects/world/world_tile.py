@@ -1,23 +1,10 @@
-import tcod
+from game_vars import color_vars
+from map_objects.tile import Tile
 
-# Merge this with Tile class
-class WorldTile:
-    def __init__(self, biom, char, color, bg_color=tcod.black):
+
+class WorldTile(Tile):
+    def __init__(self, biom=None, blocked=False, block_sight = None, bg_color = color_vars.default_bg):
+        super().__init__(blocked=blocked, block_sight=block_sight, bg_color=bg_color)
+
         self.biom = biom
-        self.explored = False
-        self.visited = False
         self.locations = None
-
-        self.char = char
-        self.color = color
-        self.bg_color = bg_color
-
-        self.distant_color = self.get_distant_color(color)
-        self.distant_bg_color = self.get_distant_color(bg_color)
-
-    def get_distant_color(self, color):
-        return tcod.Color(
-            color.r  - int(color.r * 0.5),
-            color.g - int(color.g * 0.5),
-            color.b - int(color.b * 0.5)
-        )

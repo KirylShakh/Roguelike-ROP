@@ -68,6 +68,6 @@ class Fauna:
         fighter_component = Fighter(defense=monster['defense'],
                                 power=monster['power'], xp=monster['xp'])
         ai_component = BasicMonster()
-        return Entity(x, y, monster['char'], monster['color'], monster['name'], blocks=True,
+        return Entity(x, y, char=monster['char'], color=monster['color'], name=monster['name'], blocks=True,
                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
                     attributes=monster['attributes'])

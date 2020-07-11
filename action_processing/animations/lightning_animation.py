@@ -38,8 +38,8 @@ class LightningAnimation:
             return []
 
         x, y = self.path[self.path_index]
-        lightning_arc = Entity(x, y, random_choice_from_dict(self.lightning_chars),
-                                color_vars.lightning_arc, 'Lightning Arc',
+        lightning_arc = Entity(x, y, char=random_choice_from_dict(self.lightning_chars),
+                                color=color_vars.lightning_arc, name='Lightning Arc',
                                 render_order=RenderOrder.EFFECT)
         self.lightning_entities.append(lightning_arc)
         self.engine.entities.append(lightning_arc)

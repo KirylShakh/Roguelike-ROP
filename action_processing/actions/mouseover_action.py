@@ -15,7 +15,7 @@ class MouseoverAction(Action):
 
             if not self.engine.world_map.current_dungeon.is_void(x, y):
                 tile = self.engine.world_map.current_dungeon.tiles[x][y]
-                if tile.explored and tile.char and tile.char.name:
-                    tile_contents.append(tile.char.name)
+                if 'explored' in tile.regulatory_flags:
+                    tile_contents.extend(tile.whats_there())
             self.engine.whats_under_mouse = ', '.join(tile_contents)
             self.engine.render_tick()
