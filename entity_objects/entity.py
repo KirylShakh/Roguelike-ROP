@@ -82,14 +82,6 @@ class Entity(StaticEntity):
                 or entities.get_blocking_at_location(self.x + dx, self.y + dy)):
             self.move(dx, dy)
 
-    def distance_to(self, other):
-        return self.distance(other.x, other.y)
-
-    def distance(self, x, y):
-        dx = x - self.x
-        dy = y - self.y
-        return math.sqrt(dx ** 2 + dy ** 2)
-
     def move_astar(self, target, entities, game_map):
         # Create a FOV map that has the dimensions of the map
         fov = tcod.map_new(game_map.width, game_map.height)

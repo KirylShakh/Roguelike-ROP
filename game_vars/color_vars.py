@@ -17,6 +17,15 @@ dark_ground = tcod.Color(50, 50, 150)
 light_wall = tcod.Color(130, 110, 50)
 light_ground = tcod.Color(200, 180, 50)
 
+dungeon_dirt = {
+    'wall': tcod.Color(40, 28, 11),
+    'floor': tcod.Color(49, 41, 31),
+}
+dungeon_stone = {
+    'wall': tcod.Color(37, 36, 36),
+    'floor': tcod.Color(52, 53, 54),
+}
+
 target_message = tcod.light_cyan
 error_message = tcod.red
 warning = tcod.yellow

@@ -125,7 +125,7 @@ class Renderer:
             self.clear_entity(entity)
 
     def draw_entity(self, entity, fov_map, game_map):
-        if fov_map.fov[entity.x][entity.y] or (entity.stairs and 'explored' in game_map.tiles[entity.x][entity.y].regulatory_flags):
+        if fov_map.fov[entity.x][entity.y] or (hasattr(entity, 'stairs') and entity.stairs and 'explored' in game_map.tiles[entity.x][entity.y].regulatory_flags):
             self.con.default_fg = entity.char.color
             tcod.console_put_char(self.con, entity.x, entity.y, entity.char.char, tcod.BKGND_NONE)
 

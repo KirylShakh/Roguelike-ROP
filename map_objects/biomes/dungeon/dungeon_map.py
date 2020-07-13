@@ -11,6 +11,7 @@ from entity_objects.entity import Entity
 from components.stairs import Stairs, StairsDirections
 from render_objects.render_order import RenderOrder
 from game_vars import color_vars
+from random_utils import random_choice_from_dict
 
 
 class DungeonMap(BiomMap):
@@ -28,6 +29,15 @@ class DungeonMap(BiomMap):
         self.flora = Flora()
         self.fauna = Fauna()
         self.loot = Loot()
+
+        materials = {
+            'stone': color_vars.dungeon_stone,
+            'dirt': color_vars.dungeon_dirt,
+        }
+        self.material = materials[random_choice_from_dict({
+            'stone': 10,
+            'dirt': 10,
+        })]
 
     def make_map(self, entities, moving_down=True):
         rooms = []
@@ -111,9 +121,9 @@ class DungeonMap(BiomMap):
             for y in range(self.owner.height):
                 tile = self.owner.tiles[x][y]
                 if 'blocked' in tile.regulatory_flags:
-                    tile.set_bg_color(color_vars.light_wall)
+                    tile.set_bg_color(self.material['wall'])
                 else:
-                    tile.set_bg_color(color_vars.light_ground)
+                    tile.set_bg_color(self.material['floor'])
 
     def place_player(self, player):
         player.x, player.y = self.player_start

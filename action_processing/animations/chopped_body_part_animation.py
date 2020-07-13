@@ -77,11 +77,11 @@ class ChoppedBodyPartAnimation(BasicAnimation):
         self.body_part.render_order = RenderOrder.SMALL_OBJECTS
         self.body_part.char.char = self.default_body_part_char
 
-        self.body_part.char.bg_color = color_vars.blood_pool
-        self.body_part.char.regulatory_flags.add('bg_color_stacks')
         self.engine.entities.remove(self.body_part)
         tile = self.engine.world_map.current_dungeon.tiles[self.body_part.x][self.body_part.y]
         tile.place_static_entity(self.body_part)
+        self.body_part.regulatory_flags.add('moveable')
+        tile.set_bg_color(color_vars.blood_pool)
         self.engine.regulatory_flags.add('fov_recompute')
 
         for blood_drop in self.animation_entities:

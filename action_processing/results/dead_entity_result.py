@@ -10,7 +10,7 @@ class DeadEntityResult(Result):
         player = self.engine.entities.player
         if dead_entity == player:
             player.char.char = '%'
-            player.char.Set_color(color_vars.blood)
+            player.char.set_color(color_vars.blood)
 
             self.engine.game_state = GameStates.PLAYER_DEAD
             self.engine.message_log.add_message(Message('You died', color=color_vars.crit_message))

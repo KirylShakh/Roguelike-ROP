@@ -12,16 +12,32 @@ class PushAnimation(MoveAnimation):
 
         self.path = self.calculate_path()
 
+    def complete(self):
+        self.completed = True
+        self.restore_entity_state()
+        self.recompute_fov()
+        return []
+
     def stop(self):
         self.completed = True
 
         results = []
 
-        if self.entity.fighter:
+        if hasattr(self.entity, 'fighter') and self.entity.fighter:
             attack = CollisionAttack(self.entity)
             results.extend(attack.execute())
 
+        self.restore_entity_state()
+        self.recompute_fov()
+
         return results
+
+    def restore_entity_state(self):
+        if 'moving' in self.entity.regulatory_flags:
+            self.entity.regulatory_flags.discard('moving')
+            tile = self.engine.world_map.current_dungeon.tiles[self.entity.x][self.entity.y]
+            tile.place_static_entity(self.entity)
+            self.engine.entities.remove(self.entity)
 
     def calculate_path(self):
         path = []

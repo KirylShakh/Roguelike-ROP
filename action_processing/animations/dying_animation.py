@@ -33,12 +33,13 @@ class DyingAnimation(BasicAnimation):
             self.regulatory_flags.discard('fall_phase')
             return [{'message': Message('{0} is dead'.format(self.entity.name.capitalize()), color=color_vars.dead_entity_message)}]
         elif self.regulatory_flags == set():
-            self.entity.char.bg_color = color_vars.blood_pool
-            self.entity.char.regulatory_flags.add('bg_color_stacks')
             self.entity.name = 'remains of {0}'.format(self.entity.name)
 
             self.engine.entities.remove(self.entity)
-            self.engine.world_map.current_dungeon.tiles[self.entity.x][self.entity.y].place_static_entity(self.entity)
+            tile = self.engine.world_map.current_dungeon.tiles[self.entity.x][self.entity.y]
+            tile.place_static_entity(self.entity)
+            self.entity.regulatory_flags.add('moveable')
+            tile.set_bg_color(color_vars.blood_pool)
             self.engine.regulatory_flags.add('fov_recompute')
 
             return self.complete()

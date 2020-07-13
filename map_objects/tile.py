@@ -16,19 +16,19 @@ class Tile:
 
     def place_static_entity(self, static_entity):
         self.static_entities.append(static_entity)
-        self.find_top_char_object()
+        self.static_entities_changed()
 
     def remove_static_entity(self, static_entity):
         if static_entity in self.static_entities:
             self.static_entities.remove(static_entity)
-            self.find_top_char_object()
+            self.static_entities_changed()
 
     def clear_static_entities(self):
         self.static_entities = []
         self.top_char_object = None
         self.top_bg_color = self.bg_color_base
 
-    def find_top_char_object(self):
+    def static_entities_changed(self):
         self.top_bg_color = self.bg_color_base
 
         if not self.static_entities:
@@ -45,7 +45,7 @@ class Tile:
 
     def set_bg_color(self, color):
         self.bg_color_base = color
-        self.find_top_char_object()
+        self.static_entities_changed()
 
     def bg_color(self):
         stacking_bg_colors = [entity.char.bg_color for entity in self.static_entities

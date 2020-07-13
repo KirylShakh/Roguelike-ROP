@@ -1,3 +1,5 @@
+import math
+
 from render_objects.render_order import RenderOrder
 from map_objects.char_object import Char
 
@@ -14,3 +16,13 @@ class StaticEntity:
 
         self.blocks = blocks
         self.render_order = render_order
+
+        self.regulatory_flags = set()
+
+    def distance_to(self, other):
+        return self.distance(other.x, other.y)
+
+    def distance(self, x, y):
+        dx = x - self.x
+        dy = y - self.y
+        return math.sqrt(dx ** 2 + dy ** 2)

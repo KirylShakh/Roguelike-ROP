@@ -20,6 +20,7 @@ class ExplosionAnimation:
         self.completed = False
 
         self.explosion_entities = []
+        self.other_moveable_entities = []
 
     def next_tick(self):
         results = []
@@ -34,17 +35,21 @@ class ExplosionAnimation:
                     y = self.from_y + dy
                     if (dx != 0 or dy != 0) and (dx ** 2 + dy ** 2 <= self.radius ** 2):
                         self.add_explosion_entity(x, y)
+                        for entity in self.engine.world_map.current_dungeon.tiles[x][y].static_entities:
+                            if 'moveable' in entity.regulatory_flags:
+                                self.engine.world_map.current_dungeon.tiles[x][y].remove_static_entity(entity)
+                                self.engine.entities.append(entity)
+                                self.other_moveable_entities.append(entity)
+                                entity.regulatory_flags.add('moving')
 
         if self.path_index == 2:
             if not self.attack:
                 return results
             results.extend(self.attack.execute())
             for target in self.attack.targets:
-                distance_to_center = round(target.distance(self.from_x, self.from_y))
-                push_distance = self.radius - distance_to_center + 2
-                animation = PushAnimation(self.engine, target, (self.from_x, self.from_y),
-                                            push_distance)
-                self.engine.animations.append(animation)
+                self.push_entity_by_explosion(target)
+            for entity in self.other_moveable_entities:
+                self.push_entity_by_explosion(entity)
 
         self.path_index += 1
         if self.path_index >= 5:
@@ -62,4 +67,12 @@ class ExplosionAnimation:
 
         for entity in self.explosion_entities:
             self.engine.entities.remove(entity)
+        self.engine.regulatory_flags.add('fov_recompute')
         return []
+
+    def push_entity_by_explosion(self, entity):
+        distance_to_center = round(entity.distance(self.from_x, self.from_y))
+        push_distance = self.radius - distance_to_center + 2
+        animation = PushAnimation(self.engine, entity, (self.from_x, self.from_y),
+                                    push_distance)
+        self.engine.animations.append(animation)
