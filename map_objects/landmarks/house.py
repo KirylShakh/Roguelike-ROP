@@ -5,7 +5,7 @@ import tcod
 from map_objects.landmarks.hut import Hut
 from map_objects.room import Room
 from map_objects.rectangle import Rect
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from game_vars import color_vars
 
 
@@ -142,4 +142,4 @@ class House(Hut):
         for (x, y) in self.inner_doors:
             game_map.tiles[x][y].unblock()
             game_map.tiles[x][y].clear_static_entities()
-            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **self.door_char))
+            game_map.tiles[x][y].place_static_entity(Entity(x, y, **self.door_char))

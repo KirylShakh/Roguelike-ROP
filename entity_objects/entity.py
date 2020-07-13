@@ -3,7 +3,7 @@ import tcod
 
 from components.item import Item
 from render_objects.render_order import RenderOrder
-from entity_objects.static_entity import StaticEntity
+from map_objects.char_object import Char
 
 from components.attributes.strength import Strength
 from components.attributes.dexterity import Dexterity
@@ -12,13 +12,24 @@ from components.attributes.intelligence import Intelligence
 from components.attributes.wisdom import Wisdom
 from components.attributes.charisma import Charisma
 
-class Entity(StaticEntity):
+class Entity:
     def __init__(self, x, y, char=None, color=None, bg_color=None, name=None, base_name=None,
                 blocks=False, render_order=RenderOrder.CORPSE,
                 fighter=None, ai=None, item=None, inventory=None, stairs=None, level=None,
-                equippable=None, equipment=None, attributes=None, caster=None):
-        super().__init__(x, y, char=char, color=color, bg_color=bg_color, name=name, base_name=base_name,
-                        blocks=blocks, render_order=render_order)
+                equippable=None, equipment=None, attributes=None, caster=None,
+                tree=None):
+
+        self.x = x
+        self.y = y
+        self.char = Char(char=char, color=color, bg_color=bg_color)
+
+        self.name = name
+        self.base_name = base_name
+
+        self.blocks = blocks
+        self.render_order = render_order
+
+        self.regulatory_flags = set()
 
         self.fighter = fighter
         self.ai = ai
@@ -29,9 +40,10 @@ class Entity(StaticEntity):
         self.equippable = equippable
         self.equipment = equipment
         self.caster = caster
+        self.tree = tree
 
         for component in [self.fighter, self.ai, self.item, self.inventory, self.stairs, self.level,
-                            self.equippable, self.equipment, self.caster]:
+                            self.equippable, self.equipment, self.caster, self.tree]:
             if component:
                 component.own(self)
 
@@ -65,6 +77,14 @@ class Entity(StaticEntity):
     def on_turn_end(self):
         for attribute in self.attributes:
             attribute.take_breather()
+
+    def distance_to(self, other):
+        return self.distance(other.x, other.y)
+
+    def distance(self, x, y):
+        dx = x - self.x
+        dy = y - self.y
+        return math.sqrt(dx ** 2 + dy ** 2)
 
     def move(self, dx, dy):
         self.x += dx

@@ -2,7 +2,7 @@ import math
 import tcod
 from random import randint, choice
 
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from render_objects.render_order import RenderOrder
 from random_utils import random_choice_from_dict, weight_factor
 
@@ -37,5 +37,5 @@ class Flora:
         plant_info = fungi[fungi_choice]
         name = 'Luminescent body of {0}'.format(plant_info['name'])
 
-        return StaticEntity(x, y, char=plant_info['char'], color=plant_info['color'],
+        return Entity(x, y, char=plant_info['char'], color=plant_info['color'],
                     name=name, base_name=plant_info['name'], render_order=RenderOrder.GROUND_FLORA)

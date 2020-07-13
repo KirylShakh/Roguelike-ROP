@@ -1,7 +1,7 @@
 import tcod
 
 from map_objects.landmarks.landmark import Landmark
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from render_objects.render_order import RenderOrder
 from game_vars import color_vars
 
@@ -47,21 +47,21 @@ class Shed(Landmark):
     def place(self, game_map):
         for x, y in self.walls:
             game_map.tiles[x][y].block()
-            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **self.wall_char))
+            game_map.tiles[x][y].place_static_entity(Entity(x, y, **self.wall_char))
 
         x, y = self.door
         game_map.tiles[x][y].unblock()
         game_map.tiles[x][y].clear_static_entities()
-        game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **self.door_char))
+        game_map.tiles[x][y].place_static_entity(Entity(x, y, **self.door_char))
 
         for (x, y) in self.windows:
             game_map.tiles[x][y].regulatory_flags.add('blocked')
             game_map.tiles[x][y].regulatory_flags.discard('block_sight')
             game_map.tiles[x][y].clear_static_entities()
-            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **self.window_char))
+            game_map.tiles[x][y].place_static_entity(Entity(x, y, **self.window_char))
 
         for x in range(self.rect.x1 + 1, self.rect.x2 - 1):
             for y in range(self.rect.y1 + 1, self.rect.y2 - 1):
                 if not game_map.tiles[x][y].static_entities:
-                    game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **self.floor_char))
+                    game_map.tiles[x][y].place_static_entity(Entity(x, y, **self.floor_char))
                     game_map.tiles[x][y].regulatory_flags.add('indoor')

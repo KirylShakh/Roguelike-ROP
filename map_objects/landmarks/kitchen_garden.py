@@ -3,7 +3,7 @@ import tcod
 from random_utils import random_choice_from_dict
 
 from map_objects.landmarks.landmark import Landmark
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from render_objects.render_order import RenderOrder
 from game_vars import color_vars
 
@@ -59,7 +59,7 @@ class KitchenGarden(Landmark):
 
     def place_plant_on_tile(self, x, y, tile, bed):
         plant = self.plant_chars[self.beds[bed]]
-        plant_entity = StaticEntity(x, y, render_order=RenderOrder.GROUND_FLORA, **plant)
+        plant_entity = Entity(x, y, render_order=RenderOrder.GROUND_FLORA, **plant)
 
         tile.place_static_entity(plant_entity)
         tile.regulatory_flags.add('cultivated')

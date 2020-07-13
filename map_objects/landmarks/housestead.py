@@ -6,7 +6,7 @@ from map_objects.landmarks.house import House
 from map_objects.landmarks.hut import Hut
 from map_objects.landmarks.shed import Shed
 from map_objects.landmarks.kitchen_garden import KitchenGarden
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
 
@@ -59,8 +59,8 @@ class Housestead(LandmarkArea):
         fence_tiles.remove(back_gate)
 
         self.place_mozaic_objects(fence_tiles, game_map, self.fence_char, 99, True)
-        game_map.tiles[main_gate[0]][main_gate[1]].place_static_entity(StaticEntity(main_gate[0], main_gate[1], **self.gate_char))
-        game_map.tiles[back_gate[0]][back_gate[1]].place_static_entity(StaticEntity(back_gate[0], back_gate[1], **self.gate_char))
+        game_map.tiles[main_gate[0]][main_gate[1]].place_static_entity(Entity(main_gate[0], main_gate[1], **self.gate_char))
+        game_map.tiles[back_gate[0]][back_gate[1]].place_static_entity(Entity(back_gate[0], back_gate[1], **self.gate_char))
 
         self.fence_tiles = fence_tiles
         self.main_gate = main_gate
@@ -168,7 +168,7 @@ class Housestead(LandmarkArea):
 
         for (x, y) in obj_list:
             if random_choice_from_dict(place_choices) == 'place':
-                game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **obj_char))
+                game_map.tiles[x][y].place_static_entity(Entity(x, y, **obj_char))
                 if blocked:
                     game_map.tiles[x][y].regulatory_flags.add('blocked')
                 if block_sight:

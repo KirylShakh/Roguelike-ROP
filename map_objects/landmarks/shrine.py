@@ -1,7 +1,7 @@
 import tcod
 
 from map_objects.landmarks.chapel import Chapel
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from game_vars import color_vars
 
 
@@ -114,4 +114,4 @@ class Shrine(Chapel):
         for (x, y) in bench_tiles:
             game_map.tiles[x][y].regulatory_flags.add('blocked')
             game_map.tiles[x][y].regulatory_flags.discard('block_sight')
-            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **bench_char))
+            game_map.tiles[x][y].place_static_entity(Entity(x, y, **bench_char))

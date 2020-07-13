@@ -1,7 +1,7 @@
 import tcod
 
 from map_objects.world.world_tile import WorldTile
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
 from map_objects.world.biomes import Biomes
@@ -32,7 +32,7 @@ class WorldMap:
         for x in range(self.width):
             for y in range(self.height):
                 tile = WorldTile(biom=Biomes.FOREST, bg_color=color_vars.forest_bg)
-                tree_entity = StaticEntity(x, y, char=random_choice_from_dict(forest_chars), color=color_vars.forest)
+                tree_entity = Entity(x, y, char=random_choice_from_dict(forest_chars), color=color_vars.forest)
                 tile.place_static_entity(tree_entity)
 
                 tiles[x][y] = tile
@@ -49,7 +49,7 @@ class WorldMap:
         dungeon_tile = self.tiles[dungeon_entrance_x][dungeon_entrance_y]
         dungeon_tile.clear_static_entities()
         dungeon_tile.biom = Biomes.DUNGEON
-        dungeon_entity = StaticEntity(dungeon_entrance_x, dungeon_entrance_y, char=tcod.CHAR_RADIO_SET, color=tcod.darker_grey)
+        dungeon_entity = Entity(dungeon_entrance_x, dungeon_entrance_y, char=tcod.CHAR_RADIO_SET, color=tcod.darker_grey)
         dungeon_tile.place_static_entity(dungeon_entity)
 
     def is_void(self, x, y):

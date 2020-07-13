@@ -1,7 +1,7 @@
 import tcod
 
 from map_objects.landmarks.shed import Shed
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 
 
 class Chapel(Shed):
@@ -29,4 +29,4 @@ class Chapel(Shed):
 
         for (x, y) in self.altar:
             game_map.tiles[x][y].block()
-            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **self.altar_char))
+            game_map.tiles[x][y].place_static_entity(Entity(x, y, **self.altar_char))

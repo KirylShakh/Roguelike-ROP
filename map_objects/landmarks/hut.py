@@ -1,7 +1,7 @@
 import tcod
 
 from map_objects.landmarks.shed import Shed
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from game_vars import color_vars
 
 
@@ -40,7 +40,7 @@ class Hut(Shed):
 
         for (x, y, conf) in self.furniture:
             game_map.tiles[x][y].unblock()
-            game_map.tiles[x][y].place_static_entity(StaticEntity(x, y, **conf))
+            game_map.tiles[x][y].place_static_entity(Entity(x, y, **conf))
 
     def corner_wall_tile(self, tile):
         x, y = tile

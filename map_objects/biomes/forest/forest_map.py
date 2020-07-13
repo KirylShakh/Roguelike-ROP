@@ -80,22 +80,23 @@ class ForestMap(BiomMap):
         self.trees = []
 
         for _ in range(density):
-            new_tree = self.flora.get_tree()
+            new_tree_entity = self.flora.get_tree()
+            tree = new_tree_entity.tree
             # new tree diameter
             # new tree position
-            x = randint(0, self.owner.width - new_tree.diameter - 1)
-            y = randint(0, self.owner.height - new_tree.diameter - 1)
+            x = randint(0, self.owner.width - tree.diameter - 1)
+            y = randint(0, self.owner.height - tree.diameter - 1)
 
-            square_trunk = Rect(x, y, new_tree.diameter, new_tree.diameter)
+            square_trunk = Rect(x, y, tree.diameter, tree.diameter)
             if self.landmark and self.landmark.rect.intersect_with_additional_space(square_trunk):
                 continue
-            for tree in self.trees:
-                if square_trunk.intersect(tree.trunk):
+            for tree_entity in self.trees:
+                if square_trunk.intersect(tree_entity.tree.trunk):
                     break
             else:
-                new_tree.set_trunk(square_trunk)
-                self.draw_tree(new_tree)
-                self.trees.append(new_tree)
+                tree.set_trunk(square_trunk)
+                self.draw_tree(tree)
+                self.trees.append(new_tree_entity)
 
     # function fills structures like this (example for square with side = 5 which has 2 options)
     # --+--  -+++-
@@ -150,12 +151,11 @@ class ForestMap(BiomMap):
                 self.make_tree_tile(x, y, tree)
 
     def make_tree_tile(self, x, y, tree):
-        tree.x = x
-        tree.y = y
+        tree.tiles.append((x, y))
 
         tile = self.owner.tiles[x][y]
         tile.block()
-        tile.place_static_entity(tree)
+        tile.place_static_entity(tree.owner)
 
     def calculate_crowns(self):
         self.shadowed_tiles = [[False for y in range(self.owner.height)] for x in range(self.owner.width)]
@@ -166,7 +166,8 @@ class ForestMap(BiomMap):
                     self.shadowed_tiles[x][y] = True
 
     def tile_is_under_crown(self, x, y):
-        for tree in self.trees:
+        for tree_entity in self.trees:
+            tree = tree_entity.tree
             center_x, center_y = tree.trunk.center()
             distance = math.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
 

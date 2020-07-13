@@ -3,7 +3,7 @@ from random import randint
 from game_vars import color_vars
 from game_messages import Message
 from render_objects.render_order import RenderOrder
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
 from action_processing.animations.basic_animation import BasicAnimation
 
 
@@ -17,7 +17,7 @@ class DyingAnimation(BasicAnimation):
 
     def next_tick(self):
         if 'stumble_phase' in self.regulatory_flags:
-            blood_drop = StaticEntity(self.entity.x, self.entity.y, char=',', color=color_vars.blood,
+            blood_drop = Entity(self.entity.x, self.entity.y, char=',', color=color_vars.blood,
                                 name='Drop of blood', render_order=RenderOrder.TINY_OBJECTS)
             self.engine.world_map.current_dungeon.tiles[self.entity.x][self.entity.y].place_static_entity(blood_drop)
 

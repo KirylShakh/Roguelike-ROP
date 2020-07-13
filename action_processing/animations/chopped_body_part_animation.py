@@ -1,7 +1,6 @@
 from random import randint, choice
 
 from entity_objects.entity import Entity
-from entity_objects.static_entity import StaticEntity
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
 from map_objects.path_functions import path_straight
@@ -96,7 +95,7 @@ class ChoppedBodyPartAnimation(BasicAnimation):
 
     def handle_blood_path(self):
         blood_char = random_choice_from_dict(self.blood_chars)
-        blood_entity = StaticEntity(self.body_part.x, self.body_part.y,
+        blood_entity = Entity(self.body_part.x, self.body_part.y,
                                 char=blood_char, color=color_vars.blood,
                                 name='Drop of blood', render_order=RenderOrder.EFFECT)
         self.engine.world_map.current_dungeon.tiles[self.body_part.x][self.body_part.y].place_static_entity(blood_entity)

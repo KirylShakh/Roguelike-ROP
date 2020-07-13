@@ -1,7 +1,8 @@
 import tcod
 from random import randint, choice
 
-from entity_objects.static_entity import StaticEntity
+from entity_objects.entity import Entity
+from components.tree import Tree
 from render_objects.render_order import RenderOrder
 from random_utils import random_choice_from_dict, weight_factor
 
@@ -181,7 +182,8 @@ class Flora:
         else:
             name = 'Giant trunk of {0}'.format(base_name)
 
-        return Tree(bg_color=trees[tree_key]['color'], name=name, base_name=base_name, diameter=diameter)
+        return Entity(-1, -1, bg_color=trees[tree_key]['color'], name=name, base_name=base_name, blocks=True,
+                        tree=Tree(diameter=diameter))
 
     def get_tile_plant(self, x, y, tile_shadowed):
         plant_choice = self.choose_plant(tile_shadowed)
@@ -222,7 +224,7 @@ class Flora:
         if not tile_shadowed:
             name += ' on a sunny glade'
 
-        return StaticEntity(x, y, char=char, color=color, name=name, base_name=base_name, render_order=RenderOrder.GROUND_FLORA)
+        return Entity(x, y, char=char, color=color, name=name, base_name=base_name, render_order=RenderOrder.GROUND_FLORA)
 
     def fungi(self, x, y, plant_choice):
         plant_info = fungi[plant_choice]
@@ -231,8 +233,7 @@ class Flora:
         color = plant_info['color']
         name = 'Fruiting body of {0}'.format(plant_info['name'])
 
-        return StaticEntity(x, y, char=char, color=color, name=name, base_name=plant_info['name'],
-                            render_order=RenderOrder.GROUND_FLORA)
+        return Entity(x, y, char=char, color=color, name=name, base_name=plant_info['name'], render_order=RenderOrder.GROUND_FLORA)
 
     def sapling(self, x, y, char, tile_shadowed):
         color = choice(saplings_colors)
@@ -241,7 +242,7 @@ class Flora:
         if not tile_shadowed:
             name += ' on a sunny glade'
 
-        return StaticEntity(x, y, char=char, color=color, name=name, base_name=base_name, render_order=RenderOrder.GROUND_FLORA)
+        return Entity(x, y, char=char, color=color, name=name, base_name=base_name, render_order=RenderOrder.GROUND_FLORA)
 
     def sapling_name(self, sapling):
         primary_tree = trees[self.primary]['name']
@@ -256,13 +257,3 @@ class Flora:
         }
 
         return names[sapling]
-
-class Tree(StaticEntity):
-    def __init__(self, char=None, color=None, bg_color=None, name=None, base_name=None, diameter=1):
-        super().__init__(-1, -1, char=char, color=color, bg_color=bg_color, name=name, base_name=base_name,
-                            blocks=True, render_order=RenderOrder.GROUND_FLORA)
-
-        self.diameter = diameter
-
-    def set_trunk(self, trunk):
-        self.trunk = trunk
