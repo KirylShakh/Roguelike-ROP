@@ -1,10 +1,13 @@
 import tcod
+from random import randint
 
 from map_objects.world.world_tile import WorldTile
 from entity_objects.entity import Entity
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
 from map_objects.world.biomes import Biomes
+from map_objects.biomes.forest.forest_locations import ForestLocations
+from map_objects.biomes.dungeon.dungeon_locations import DungeonLocations
 
 
 class WorldMap:
@@ -15,6 +18,8 @@ class WorldMap:
 
         self.current_dungeon = None
         self.current_dungeon_entry_point = (0, 0)
+
+        self.potential_move = None
 
     def initialize_tiles(self):
         forest_chars = {
@@ -51,6 +56,25 @@ class WorldMap:
         dungeon_tile.biom = Biomes.DUNGEON
         dungeon_entity = Entity(dungeon_entrance_x, dungeon_entrance_y, char=tcod.CHAR_RADIO_SET, color=tcod.darker_grey)
         dungeon_tile.place_static_entity(dungeon_entity)
+
+    def make_locations(self, tile):
+        if tile.locations:
+            return
+
+        number_of_locations = randint(1, 5)
+        tile.locations = []
+
+        biom_location_creator = self.choose_creator_for_biom(tile.biom)
+        for _ in range(number_of_locations):
+            location = biom_location_creator.generate_location()
+            tile.locations.append(location)
+
+    def choose_creator_for_biom(self, biom):
+        if biom == Biomes.FOREST:
+            return ForestLocations()
+        elif biom == Biomes.DUNGEON:
+            return DungeonLocations()
+        return None
 
     def is_void(self, x, y):
         return x < 0 or y < 0 or x >= self.width or y >= self.height

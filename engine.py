@@ -22,6 +22,7 @@ from action_processing.actions.inventory_index_action import InventoryIndexActio
 from action_processing.actions.level_up_action import LevelUpAction
 from action_processing.actions.mouseover_action import MouseoverAction
 from action_processing.actions.move_action import MoveAction
+from action_processing.actions.move_into_region_action import MoveIntoRegionAction
 from action_processing.actions.pickup_action import PickupAction
 from action_processing.actions.left_click_action import LeftClickAction
 from action_processing.actions.right_click_action import RightClickAction
@@ -207,6 +208,10 @@ class Engine:
                     action.run(event.get('level_up'))
 
                 if self.player_location == PlayerLocations.WORLD_MAP:
+                    if event.get('move_into_region'):
+                        action = MoveIntoRegionAction(self)
+                        action.run()
+
                     if event.get('explore'):
                         action = ExploreAction(self)
                         action.run()

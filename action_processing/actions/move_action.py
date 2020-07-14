@@ -1,4 +1,5 @@
 from action_processing.actions.action import Action
+from action_processing.actions.info_screen_action import InfoScreenAction
 from action_processing.combat.simple_attack_action import SimpleAttackAction
 from game_states import GameStates
 from player_locations import PlayerLocations
@@ -16,12 +17,18 @@ class MoveAction(Action):
         player = self.engine.entities.player
         if self.engine.game_state == GameStates.PLAYERS_TURN:
             dx, dy = move
+            new_x = player.x + dx
+            new_y = player.y + dy
 
-            if not self.engine.world_map.is_void(player.x + dx, player.y + dy):
-                player.move(dx, dy)
-                self.engine.regulatory_flags.add('fov_recompute')
-
+            if not self.engine.world_map.is_void(new_x, new_y):
                 self.engine.game_state = GameStates.ENEMY_TURN
+                if 'visited' in self.engine.world_map.tiles[new_x][new_y].regulatory_flags:
+                    player.move(dx, dy)
+                    self.engine.regulatory_flags.add('fov_recompute')
+                else:
+                    self.engine.world_map.potential_move = move
+                    action = InfoScreenAction(self.engine)
+                    action.run(GameStates.EXPLORATION_SCREEN)
 
     def move_in_dungeon(self, move):
         if self.engine.game_state == GameStates.PLAYERS_TURN:

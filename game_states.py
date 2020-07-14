@@ -10,4 +10,5 @@ class GameStates(Enum):
     LEVEL_UP = auto()
     CHARACTER_SCREEN = auto()
     SHOW_LOCATIONS = auto()
+    EXPLORATION_SCREEN = auto()
     EXIT = auto()

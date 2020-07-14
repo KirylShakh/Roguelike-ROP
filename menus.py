@@ -1,5 +1,7 @@
 import tcod
 
+from locales import locale
+
 
 def menu(header, options, width, renderer):
     if len(options) > 26:
@@ -53,7 +55,7 @@ def main_menu(background_image, menu_width, renderer):
 
     renderer.root.default_fg = tcod.light_yellow
     tcod.console_print_ex(0, renderer.screen_width // 2, renderer.screen_height // 2 - 4,
-                tcod.BKGND_NONE, tcod.CENTER, 'Tombs Of The Ancient Kings')
+                tcod.BKGND_NONE, tcod.CENTER, locale.t('story.game_title'))
     tcod.console_print_ex(0, renderer.screen_width // 2, renderer.screen_height // 2 - 2,
                 tcod.BKGND_NONE, tcod.CENTER, 'By Me')
 
@@ -110,3 +112,42 @@ def locations_menu(header, menu_width, locations, renderer):
                 options.append('{0} (visited)'.format(location.name))
 
     menu(header, options, menu_width, renderer)
+
+def exploration_screen(player, screen_width, screen_height, world_map, target_point, renderer):
+    x, y = target_point
+    tile = world_map.tiles[x][y]
+    biom_name = tile.biom.name.lower()
+
+    window = tcod.console.Console(screen_width, screen_height)
+    window.default_fg = tcod.white
+
+    info_table = [
+        ' '.join((locale.t('world.exploration.title', biom_name.title(), target_point),
+                    locale.t('world.exploration.{0}.scouting'.format(biom_name)),
+                    locale.t('world.exploration.{0}.landmark.scouting'.format(biom_name)),
+                )),
+        '-'*40,
+    ]
+
+    if not tile.locations:
+        world_map.make_locations(tile)
+
+    if len(tile.locations) > 0:
+        info_table.append(locale.t('world.exploration.{0}.landmark.exists'.format(biom_name)))
+        for location in tile.locations:
+            info_table.append(locale.t('world.exploration.{0}.landmark.entry'.format(biom_name), location.name))
+    else:
+        info_table.append(locale.t('world.exploration.{0}.landmark.not_exists'.format(biom_name)))
+
+    info_table.append('-'*40)
+    info_table.append(locale.t('interface.exploration.go_option'))
+    info_table.append(locale.t('interface.exploration.stay_option'))
+
+    height = 0
+    for text in info_table:
+        height += window.print_box(x=0, y=height, width=screen_width, height=screen_height,
+                            string=text, fg=tcod.white)
+
+    x = renderer.screen_width // 2 - screen_width // 2
+    y = renderer.screen_height // 2 - screen_height // 2
+    window.blit(renderer.root, x, y, 0, 0, screen_width, screen_height, 1.0, 0.7)

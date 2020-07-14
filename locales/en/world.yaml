@@ -1,0 +1,16 @@
+exploration:
+  title: '  You are standing at the border of the {0} region at {1}.'
+  forest:
+    scouting: A dense ancient forest is towering before you.
+    landmark:
+      scouting: You thoroughly study it from neaby vantage point.
+      exists: 'You manage to notice something of interest looming among the trees:'
+      entry: '  {0}'
+      not_exists: You do not see anything particularly distinguished among the trees.
+  dungeon:
+    scouting: Ruins with gapes in floors, misterious holes leading underground dot the landscape before you.
+    landmark:
+      scouting: You thoroughly study potential entrances from neaby vantage point.
+      exists: 'You manage to notice some entrances to mysterious:'
+      entry: '   {0}'
+      not_exists: You do not see anything particularly distinguished among rubbish and rocks.

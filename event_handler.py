@@ -28,6 +28,8 @@ def handle(event, game_state):
         return handle_character_screen(event)
     elif game_state == GameStates.SHOW_LOCATIONS:
         return handle_show_locations(event)
+    elif game_state == GameStates.EXPLORATION_SCREEN:
+        return handle_exploration_screen(event)
 
     return {}
 
@@ -146,6 +148,19 @@ def handle_show_locations(event):
             return {'location_index': index}
 
         if event.sym == tcod.event.K_ESCAPE:
+            return {'exit': True}
+
+        if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
+            return {'fullscreen': True}
+
+    return {}
+
+def handle_exploration_screen(event):
+    if event.type == 'KEYDOWN':
+        if event.sym == tcod.event.K_a:
+            return {'move_into_region': True}
+
+        if event.sym == tcod.event.K_ESCAPE or event.sym == tcod.event.K_b:
             return {'exit': True}
 
         if event.sym == tcod.event.K_RETURN and (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):

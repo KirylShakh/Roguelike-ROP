@@ -2,7 +2,7 @@ import tcod
 
 from game_vars import color_vars, screen_vars, panel_vars, menu_vars
 from game_states import GameStates
-from menus import inventory_menu, level_up_menu, character_screen, locations_menu
+from menus import inventory_menu, level_up_menu, character_screen, locations_menu, exploration_screen
 from player_locations import PlayerLocations
 
 
@@ -119,6 +119,11 @@ class Renderer:
         elif game_state == GameStates.SHOW_LOCATIONS:
             tile = world_map.tiles[player.x][player.y]
             locations_menu(menu_vars.location_list_title, menu_vars.location_list_width, tile.locations, self)
+        elif game_state == GameStates.EXPLORATION_SCREEN:
+            tile = world_map.tiles[player.x][player.y]
+            dx, dy = world_map.potential_move
+            exploration_screen(player, menu_vars.exploration_screen_width, menu_vars.exploration_screen_height,
+                                world_map, (player.x + dx, player.y + dy), self)
 
     def clear_all(self, entities):
         for entity in entities.all:

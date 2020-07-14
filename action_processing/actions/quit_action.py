@@ -5,7 +5,8 @@ from loader_functions.data_loaders import save_game
 
 class QuitAction(Action):
     def run(self):
-        if self.engine.game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN, GameStates.SHOW_LOCATIONS):
+        if self.engine.game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN,
+                                    GameStates.SHOW_LOCATIONS, GameStates.EXPLORATION_SCREEN):
             self.engine.game_state = self.engine.previous_game_state
             self.engine.render_tick()
         elif self.engine.game_state == GameStates.TARGETING:
