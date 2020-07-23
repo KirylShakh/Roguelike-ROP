@@ -12,17 +12,20 @@ from components.stairs import Stairs, StairsDirections
 from render_objects.render_order import RenderOrder
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
+from map_objects.landmarks.encounters.surround_encounter import SurroundEncounter
+from map_objects.landmarks.encounters.camp_encounter import CampEncounter
 
 
 class DungeonMap(BiomMap):
     def __init__(self, max_rooms, room_min_size, room_max_size, landmark=None):
+        super().__init__()
+
         self.max_rooms = max_rooms
         self.room_min_size = room_min_size
         self.room_max_size = room_max_size
         self.landmark = landmark
 
         self.default_tile_blocked = True
-        self.fov_radius = 10
 
         self.player_start = None
 
@@ -40,6 +43,9 @@ class DungeonMap(BiomMap):
         })]
 
     def make_map(self, entities, moving_down=True):
+        if self.encounter and self.encounter.place_order == 'start':
+            self.encounter.create_on(self.owner, entities)
+
         rooms = []
         num_rooms = 0
 
@@ -61,8 +67,9 @@ class DungeonMap(BiomMap):
                 (new_x, new_y) = new_room.center()
 
                 if num_rooms == 0:
-                    self.player_start = (new_x, new_y)
-                    self.place_player(entities.player)
+                    if not self.encounter:
+                        self.player_start = (new_x, new_y)
+                        self.place_player(entities.player)
                 else:
                     # all rooms after the first:
                     # connect it to the previous room with a tunnel
@@ -124,6 +131,30 @@ class DungeonMap(BiomMap):
                     tile.set_bg_color(self.material['wall'])
                 else:
                     tile.set_bg_color(self.material['floor'])
+
+        if self.encounter and self.encounter.place_order == 'end':
+            self.encounter.create_on(self.owner, entities)
+
+    # disable dungeon encounter until dungeon map will not be reworked
+    # also until way of setting place on map for encounters and player will be defined properly
+    def choose_encounter(self):
+        return False
+
+    def possible_encounters(self):
+        return {
+            'bandit_ambush': {
+                'class': SurroundEncounter,
+                'weight_factor': 20,
+                'parameters': {
+                    'entity_type': 'bandit',
+                },
+            },
+            'camp': {
+                'class': CampEncounter,
+                'weight_factor': 10,
+                'parameters': {},
+            },
+        }
 
     def place_player(self, player):
         player.x, player.y = self.player_start

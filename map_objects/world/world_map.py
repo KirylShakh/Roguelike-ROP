@@ -87,6 +87,9 @@ class WorldMap:
             return self.tiles[player.x][player.y].biom
         return None
 
+    def is_encounter_present_in(self, tile):
+        return True
+
     # (bg_color, char, char_color)
     def tile_render_info(self, x, y, visible):
         tile = self.tiles[x][y]

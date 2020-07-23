@@ -7,30 +7,36 @@ from map_objects.biomes.forest.forest_map import ForestMap
 from map_objects.world.biomes import Biomes
 from game_vars import map_vars, room_vars, color_vars
 from game_messages import Message
-from fov_functions import initialize_fov
 from components.stairs import StairsDirections
 
 
 class EnterAction(Action):
-    def run(self, location_index=None):
+    def run(self, location_index=None, encounter=False):
         if self.engine.player_location == PlayerLocations.WORLD_MAP and location_index is not None:
             self.enter_location(location_index)
         elif self.engine.player_location == PlayerLocations.WORLD_MAP:
-            self.enter_world_tile()
+            self.enter_world_tile(encounter=encounter)
         elif self.engine.player_location == PlayerLocations.DUNGEON:
             self.enter_next_floor()
 
-    def enter_world_tile(self):
+    def enter_world_tile(self, encounter=False):
         player = self.engine.entities.player
         tile = self.engine.world_map.tiles[player.x][player.y]
         if tile.biom == Biomes.DUNGEON:
             map_creator = DungeonMap(room_vars.max_num, room_vars.min_size, room_vars.max_size)
-            self.enter_nameless_location(map_creator)
         elif tile.biom == Biomes.FOREST:
             map_creator = ForestMap(5)
-            self.enter_nameless_location(map_creator)
         else:
             self.engine.message_log.add_message(Message('There is nowhere to enter here', color_vars.warning))
+            return
+
+        if encounter:
+            if map_creator.choose_encounter():
+                if map_creator.encounter.message:
+                    self.engine.message_log.add_message(Message(map_creator.encounter.message, color_vars.warning))
+                self.enter_nameless_location(map_creator)
+        else:
+            self.enter_nameless_location(map_creator)
 
     def enter_location(self, location_index):
         player = self.engine.entities.player

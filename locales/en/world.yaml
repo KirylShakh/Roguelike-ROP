@@ -7,6 +7,10 @@ exploration:
       exists: 'You manage to notice something of interest looming among the trees:'
       entry: '  {0}'
       not_exists: You do not see anything particularly distinguished among the trees.
+    encounter:
+      bandit_ambush: You were ambushed by local bandits
+      animal_ambush: You are picked as a prey by a local predator pack
+      camp: You see a campfire light somewhere between the tree trunks
   dungeon:
     scouting: Ruins with gapes in floors, misterious holes leading underground dot the landscape before you.
     landmark:

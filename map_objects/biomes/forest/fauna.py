@@ -2,6 +2,7 @@ import math
 import tcod
 from random import randint
 
+from map_objects.biomes.biom_fauna import BiomFauna
 from entity_objects.entity import Entity
 from components.fighter import Fighter
 from components.ai import BasicMonster
@@ -13,6 +14,7 @@ monsters = {
     'goblin': {
         'name': 'Goblin',
         'char': 'g',
+        'types': {'bandit', 'camper'},
         'attributes': {
             'strength': 7,
             'dexterity': 14,
@@ -30,6 +32,7 @@ monsters = {
     'catfolk': {
         'name': 'Catfolk',
         'char': 'c',
+        'types': {'bandit', 'camper'},
         'attributes': {
             'strength': 12,
             'dexterity': 16,
@@ -44,9 +47,30 @@ monsters = {
         'color': tcod.brass,
         'weight_factor': 20,
     },
+    'worg': {
+        'name': 'Worg',
+        'char': 'w',
+        'types': {'animal'},
+        'attributes': {
+            'strength': 16,
+            'dexterity': 14,
+            'constitution': 11,
+            'intelligence': 2,
+            'wisdom': 7,
+            'charisma': 11,
+        },
+        'power': 2,
+        'defense': 0,
+        'xp': 20,
+        'color': tcod.gray,
+        'weight_factor': 40,
+    },
 }
 
-class Fauna:
+class Fauna(BiomFauna):
+    def __init__(self):
+        self.monsters = monsters
+
     def populate(self, forest, entities):
         number_of_monsters = round(math.pow(forest.width * forest.height, 0.25))
         monster_chances = weight_factor(monsters)
@@ -59,12 +83,3 @@ class Fauna:
                 monster_choice = random_choice_from_dict(monster_chances)
                 monster = self.get_monster(x, y, monster_choice)
                 entities.append(monster)
-
-    def get_monster(self, x, y, monster_choice):
-        monster = monsters[monster_choice]
-        fighter_component = Fighter(defense=monster['defense'],
-                                power=monster['power'], xp=monster['xp'])
-        ai_component = BasicMonster()
-        return Entity(x, y, char=monster['char'], color=monster['color'], name=monster['name'], blocks=True,
-                    render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
-                    attributes=monster['attributes'])

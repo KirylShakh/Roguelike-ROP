@@ -1,6 +1,7 @@
 import tcod
 from random import randint
 
+from map_objects.biomes.biom_fauna import BiomFauna
 from entity_objects.entity import Entity
 from components.fighter import Fighter
 from components.ai import BasicMonster
@@ -15,6 +16,7 @@ monsters = {
     'orc': {
         'name': 'Orc',
         'char': 'o',
+        'types': {'bandit', 'camper'},
         'attributes': {
             'strength': 17,
             'dexterity': 12,
@@ -32,6 +34,7 @@ monsters = {
     'troll': {
         'name': 'Troll',
         'char': 'T',
+        'types': {'bandit', 'camper'},
         'attributes': {
             'strength': 22,
             'dexterity': 8,
@@ -48,7 +51,10 @@ monsters = {
     },
 }
 
-class Fauna:
+class Fauna(BiomFauna):
+    def __init__(self):
+        self.monsters = monsters
+
     def populate_room(self, room, dungeon_level, entities):
         max_monsters_per_room = from_dungeon_level(max_monsters_per_room_weights, dungeon_level)
         number_of_monsters = randint(0, max_monsters_per_room)
@@ -62,12 +68,3 @@ class Fauna:
                 monster_choice = random_choice_from_dict(monster_chances)
                 monster = self.get_monster(x, y, monster_choice)
                 entities.append(monster)
-
-    def get_monster(self, x, y, monster_choice):
-        monster = monsters[monster_choice]
-        fighter_component = Fighter(defense=monster['defense'],
-                                power=monster['power'], xp=monster['xp'])
-        ai_component = BasicMonster()
-        return Entity(x, y, char=monster['char'], color=monster['color'], name=monster['name'], blocks=True,
-                    render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
-                    attributes=monster['attributes'])

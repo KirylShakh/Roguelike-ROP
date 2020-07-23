@@ -5,12 +5,17 @@ from map_objects.biomes.biom_map import BiomMap
 from map_objects.rectangle import Rect
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
+from locales import locale
 from map_objects.biomes.forest.flora import Flora
 from map_objects.biomes.forest.fauna import Fauna
+from map_objects.landmarks.encounters.surround_encounter import SurroundEncounter
+from map_objects.landmarks.encounters.camp_encounter import CampEncounter
 
 
 class ForestMap(BiomMap):
     def __init__(self, average_tree_diameter, landmark=None):
+        super().__init__()
+
         self.fov_radius = 20
 
         self.landmark = landmark
@@ -23,6 +28,9 @@ class ForestMap(BiomMap):
         self.shadowed_tiles = [[]]
 
     def make_map(self, entities, moving_down=True):
+        if self.encounter and self.encounter.place_order == 'start':
+            self.encounter.create_on(self.owner, entities)
+
         if self.landmark:
             self.place_landmark()
         self.place_trees()
@@ -30,42 +38,45 @@ class ForestMap(BiomMap):
         self.place_grass()
         self.place_entities(entities)
 
-        self.place_player(entities.player)
+        if self.encounter and self.encounter.place_order == 'end':
+            self.encounter.create_on(self.owner, entities)
+
+        if not self.encounter:
+            self.place_player(entities.player)
+
+    def possible_encounters(self):
+        return {
+            'bandit_ambush': {
+                'class': SurroundEncounter,
+                'weight_factor': 15,
+                'parameters': {
+                    'entity_type': 'bandit',
+                    'message': locale.t('world.exploration.forest.encounter.bandit_ambush'),
+                },
+            },
+            'animal_ambush': {
+                'class': SurroundEncounter,
+                'weight_factor': 25,
+                'parameters': {
+                    'entity_type': 'animal',
+                    'message': locale.t('world.exploration.forest.encounter.animal_ambush'),
+                },
+            },
+            'camp': {
+                'class': CampEncounter,
+                'weight_factor': 10,
+                'parameters': {
+                    'message': locale.t('world.exploration.forest.encounter.camp'),
+                },
+            },
+        }
 
     def place_player(self, player):
-        player.x, player.y = self.find_empty_spot()
+        player.x, player.y = self.find_empty_spot(Rect(0, 0, self.owner.width, self.owner.height, calculate_borders=True))
 
-    def find_empty_spot(self):
-        center_x = int(self.owner.width / 2)
-        center_y = int(self.owner.height / 2)
-        checked_tiles = [[False for y in range(self.owner.height)] for x in range(self.owner.width)]
-
-        result = self.check_empty_spot(checked_tiles, center_x, center_y, 0)
-        if result:
-            x, y, _ = result
-            return (x, y)
-
-        print('whoops no free space in forest')
-        return (0, 0)
-
-    def check_empty_spot(self, checked_tiles, x, y, distance):
-        checked_tiles[x][y] = True
-        if not self.owner.is_blocked(x, y):
-            return (x, y, distance)
-
-        deltas = [-1, 0, 1]
-        for i in deltas:
-            for j in deltas:
-                if self.owner.is_void(x, y) or checked_tiles[x + i][y + j]:
-                    continue
-
-                result = self.check_empty_spot(checked_tiles, x + i, y + j, distance + 1)
-                if result:
-                    _, _, distance = result
-                    if distance < self.average_tree_diameter * 2:
-                        return result
-
-        return None
+    def _map_specific_empty_spot_check(self, result):
+        _, _, distance = result
+        return distance < self.average_tree_diameter * 2
 
     def place_landmark(self):
         self.landmark.create_on(self.owner)

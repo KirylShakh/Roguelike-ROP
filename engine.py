@@ -307,6 +307,10 @@ class Engine:
         if len(self.animations) > 0:
             self.process_animations()
 
+        if 'change_location' in self.regulatory_flags:
+            action = SetupNewLocationAction(self)
+            action.run()
+
     def on_turn_end(self):
         if self.game_state == GameStates.EXIT:
             return

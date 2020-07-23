@@ -4,6 +4,7 @@ from player_locations import PlayerLocations
 from game_messages import Message
 from map_objects.world.biomes import Biomes
 
+from action_processing.actions.enter_action import EnterAction
 from action_processing.results.dead_entity_result import DeadEntityResult
 from action_processing.animations.charge_animation import ChargeAnimation
 
@@ -23,6 +24,9 @@ class WorldAction(Action):
                 self.engine.message_log.add_message(Message('You traverse empty lifeless silent forest'))
             elif tile.biom == Biomes.DUNGEON:
                 self.engine.message_log.add_message(Message('There are bottomless ruins here'))
+            if self.engine.world_map.is_encounter_present_in(tile):
+                action = EnterAction(self.engine)
+                action.run(encounter=True)
             tile.regulatory_flags.add('visited')
         self.engine.game_state = GameStates.PLAYERS_TURN
 

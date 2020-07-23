@@ -38,7 +38,7 @@ class Landmark:
         # random width and height
         w = randint(self.min_width, self.max_width)
         h = randint(self.min_height, self.max_height)
-        # random position without going out of the boundaries of the map
+        # random position without going out of the boundaries of the map/parent rect
         x = randint(self.min_x, self.max_x - w)
         y = randint(self.min_y, self.max_y - h)
 

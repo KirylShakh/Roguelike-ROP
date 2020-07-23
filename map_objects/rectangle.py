@@ -72,6 +72,9 @@ class Rect:
                     return (x, y)
                 i += 1
 
+    def random_border_tile(self):
+        return choice(self.border_tiles)
+
     def random_side_tile(self):
         return choice(self.side_tiles)
 
@@ -93,6 +96,22 @@ class Rect:
             return self.random_side(['north', 'south'])
         else:
             return self.random_side(['east', 'west'])
+
+    def random_adjacent_tile(self, tile):
+        return choice(self.neighbour_tiles(tile))
+
+    def neighbour_tiles(self, tile):
+        x, y = tile
+        return [
+            (x - 1, y - 1),
+            (x, y - 1),
+            (x + 1, y - 1),
+            (x + 1, y),
+            (x + 1, y + 1),
+            (x, y + 1),
+            (x - 1, y + 1),
+            (x - 1, y),
+        ]
 
     def neighbour_sides(self, direction):
         if direction in ['east', 'west']:
