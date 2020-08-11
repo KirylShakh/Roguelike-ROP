@@ -19,13 +19,12 @@ from map_objects.landmarks.encounters.camp_encounter import CampEncounter
 class DungeonMap(BiomMap):
     def __init__(self, max_rooms, room_min_size, room_max_size, landmark=None):
         super().__init__()
+        self.default_tile_blocked = True
 
         self.max_rooms = max_rooms
         self.room_min_size = room_min_size
         self.room_max_size = room_max_size
         self.landmark = landmark
-
-        self.default_tile_blocked = True
 
         self.player_start = None
 

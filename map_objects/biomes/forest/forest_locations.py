@@ -26,8 +26,8 @@ class ForestLocations:
                     'Nuzough', # God of Life, Fertility, Nature
                     'Gartash', # God of Creation, Perfection, Madness
                     'Sethril', # Goddess of Freedom, Violence, Feasts
-                    'Yttia', # Supreme Goddess of Memories, Deep, Abyss, sister of Yiatim
-                    'Yiatim', # Supreme God of Change, Travel, Ways, brother of Yttia
+                    'Yttia', # Supreme Goddess of Memories, Ocean, Void, sister of Yiatim
+                    'Yiatim', # Supreme God of Change, Sky, Ways, brother of Yttia
                     'Quifim', # Goddess of Love, Lies, Regret
                 ],
                 'weight_factor': 10,

@@ -1,5 +1,5 @@
 import tcod
-from random import randint
+from random import randint, choice
 
 from map_objects.world.world_tile import WorldTile
 from entity_objects.entity import Entity
@@ -88,7 +88,7 @@ class WorldMap:
         return None
 
     def is_encounter_present_in(self, tile):
-        return True
+        return choice([True, False])
 
     # (bg_color, char, char_color)
     def tile_render_info(self, x, y, visible):

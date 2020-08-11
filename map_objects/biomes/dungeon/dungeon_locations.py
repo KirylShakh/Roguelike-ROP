@@ -2,6 +2,7 @@ from random import choice
 
 from random_utils import weight_factor, random_choice_from_dict
 from map_objects.biomes.dungeon.dungeon_map import DungeonMap
+from map_objects.biomes.dungeon.cave_map import CaveMap
 from map_objects.game_map import GameMap
 from game_vars import map_vars
 
@@ -48,6 +49,8 @@ class DungeonLocations:
             name = 'Remains of {0} of the city of {1}'.format(location_type, choice(location['names']))
         elif location_choice == 'cave':
             name = '{0} of {1}'.format(location_type, choice(location['names'])).strip()
+            landmark = Landmark(name, location_choice, location_type)
+            return GameMap(map_vars.width, map_vars.height, map_creator=CaveMap(landmark=landmark))
 
         landmark = Landmark(name, location_choice, location_type)
         location = GameMap(map_vars.width, map_vars.height, map_creator=DungeonMap(10, 3, 5, landmark=landmark))

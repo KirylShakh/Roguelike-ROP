@@ -8,7 +8,18 @@ from map_objects.landmarks.encounters.encounter import EncounterChallenge
 class BiomMap(Component):
     def __init__(self):
         self.fov_radius = 10
+        self.default_tile_blocked = False
         self.encounter = None
+
+    def make_map(self, entities, moving_down=True):
+        pass
+
+    def place_player(self, player):
+        pass
+
+    # returns (bg_color, char, char_color)
+    def tile_render_info(self, x, y, visible):
+        pass
 
     def choose_encounter(self):
         possible_encounters = self.possible_encounters()

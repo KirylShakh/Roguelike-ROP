@@ -18,3 +18,6 @@ exploration:
       exists: 'You manage to notice some entrances to mysterious:'
       entry: '   {0}'
       not_exists: You do not see anything particularly distinguished among rubbish and rocks.
+cave:
+  passage:
+    outside: Passage outside

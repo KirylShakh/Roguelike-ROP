@@ -15,15 +15,12 @@ from map_objects.landmarks.encounters.camp_encounter import CampEncounter
 class ForestMap(BiomMap):
     def __init__(self, average_tree_diameter, landmark=None):
         super().__init__()
-
         self.fov_radius = 20
 
         self.landmark = landmark
         self.average_tree_diameter = average_tree_diameter
         self.flora = Flora(self.average_tree_diameter)
         self.fauna = Fauna()
-
-        self.default_tile_blocked = False
 
         self.shadowed_tiles = [[]]
 

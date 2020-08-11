@@ -80,3 +80,15 @@ class GameMap:
 
     def tile_render_info(self, x, y, visible):
         return self.map_creator.tile_render_info(x, y, visible)
+
+    def __str__(self):
+        result = ''
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.is_blocked(x, y):
+                    ch = ' '
+                else:
+                    ch = '.'
+                result += ch
+            result += '\r\n'
+        return result
