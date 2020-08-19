@@ -65,6 +65,10 @@ class Tile:
         else:
             return color_vars.mutated_color(self.top_bg_color)
 
+    def light_up(self):
+        mult = 1.4
+        self.set_bg_color(color_vars.mutated_color_detailed(self.bg_color_base, mult_r=mult, mult_g=mult, mult_b=mult))
+
     def whats_there(self):
         names = []
         for entity in self.static_entities:

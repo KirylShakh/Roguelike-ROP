@@ -86,7 +86,7 @@ class DungeonMap(BiomMap):
 
                 self.fauna.populate_room(new_room, self.owner.dungeon_level, entities)
                 self.loot.fill_room(new_room, self.owner.dungeon_level, entities)
-                self.flora.grow_fungi(self.owner, new_room)
+                self.flora.grow_fungi_in_room(self.owner, new_room)
 
                 rooms.append(new_room)
                 num_rooms += 1

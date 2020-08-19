@@ -6,6 +6,7 @@ from map_objects.landmarks.house import House
 from map_objects.landmarks.hut import Hut
 from map_objects.landmarks.shed import Shed
 from map_objects.landmarks.kitchen_garden import KitchenGarden
+from map_objects.path_functions import find_path_in_area
 from entity_objects.entity import Entity
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
@@ -88,7 +89,7 @@ class Housestead(LandmarkArea):
         start_x, start_y = start_tile
         end_x, end_y = end_tile
 
-        return self.find_path_in_area(
+        return find_path_in_area(
             (start_x - self.rect.x1, start_y - self.rect.y1),
             (end_x - self.rect.x1, end_y - self.rect.y1),
             self.are_map_for_road_building(game_map)
@@ -101,64 +102,6 @@ class Housestead(LandmarkArea):
         return (not game_map.is_blocked(x, y)
                 and 'indoor' not in game_map.tiles[x][y].regulatory_flags
                 and 'cultivated' not in game_map.tiles[x][y].regulatory_flags)
-
-    def find_path_in_area(self, start_tile, end_tile, area_map):
-        x, y = end_tile
-        counter = 0
-
-        area_map[x][y] = counter
-        queue = [(x, y)]
-
-        while start_tile not in queue:
-            next_queue = []
-            counter += 1
-            if counter > 100:
-                return []
-
-            for i, j in queue:
-                for x, y in self.get_neighbors(i, j, area_map):
-                    if area_map[x][y] == -1:
-                        next_queue.append((x, y))
-                        area_map[x][y] = counter
-
-            queue = next_queue
-
-        path = []
-        current_tile = start_tile
-        while current_tile != end_tile:
-            i, j = current_tile
-            neighbors = self.get_neighbors(i, j, area_map)
-            min_x, min_y = neighbors[0]
-
-            for x, y in neighbors:
-                if area_map[min_x][min_y] < 0:
-                    min_x, min_y = x, y
-                elif area_map[x][y] < 0:
-                    continue
-                elif area_map[x][y] < area_map[min_x][min_y]:
-                    min_x, min_y = x, y
-            candidates = [(x, y) for x, y in neighbors if (x, y) == (min_x, min_y)]
-            current_tile = candidates[randint(0, len(candidates) - 1)]
-            path.append(current_tile)
-
-        return path[:-1]
-
-    def get_neighbors(self, i, j, area_map):
-        belongs = lambda x, y : x >= 0 and x < len(area_map) and y >= 0 and y < len(area_map[0])
-
-        return list(filter(
-            lambda neighbour: belongs(neighbour[0], neighbour[1]),
-            [
-                (i + 1, j),
-                (i - 1, j),
-                (i, j + 1),
-                (i, j - 1),
-                (i + 1, j + 1),
-                (i - 1, j + 1),
-                (i + 1, j - 1),
-                (i - 1, j - 1),
-            ]
-        ))
 
     def place_mozaic_objects(self, obj_list, game_map, obj_char, place_chance, blocked = False, block_sight = False):
         place_choices = {

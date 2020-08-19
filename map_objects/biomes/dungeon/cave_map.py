@@ -2,12 +2,16 @@ import math
 from random import randint, choice
 
 from map_objects.biomes.biom_map import BiomMap
+from map_objects.biomes.dungeon.flora import Flora
+from map_objects.biomes.dungeon.fauna import Fauna
 from map_objects.rectangle import Rect
+from map_objects.path_functions import find_path_in_area
 from entity_objects.entity import Entity
 from components.stairs import Stairs, StairsDirections
 from render_objects.render_order import RenderOrder
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
+from fov_functions import get_fov_coordinates_from_point
 from locales import locale
 
 
@@ -21,7 +25,11 @@ class CaveMap(BiomMap):
 
         self.landmark = landmark
 
-    # generate maze using Prim's algorithm, than remove dead ends and grow walls using cellular automata
+        self.flora = Flora()
+        self.fauna = Fauna()
+
+    # map generation method: it will generate map, paint tiles, divide map into zones, place entities (flora, fauna, etc.)
+    # map generation sequence: generate maze using Prim's algorithm, than remove dead ends and grow walls using cellular automata
     def make_map(self, entities, moving_down=True):
         self.generate_maze()
         self.clip_walls()
@@ -31,6 +39,8 @@ class CaveMap(BiomMap):
 
         self.place_stairs(entities)
         self.place_player(entities.player)
+
+        self.split_into_zones()
 
     def generate_maze(self):
         # random start point for a maze
@@ -157,6 +167,59 @@ class CaveMap(BiomMap):
                 if not self.owner.is_blocked(x, y):
                     return (x, y)
 
+    def split_into_zones(self):
+        self.entrance_zones = []
+        self.twilight_zone = set()
+        self.dark_zone = set()
+
+        self.evaluate_entrance_zones()
+        self.flora.grow_cave_entrance_zone(self.owner, self.entrance_zones)
+        self.light_entrance_zones()
+
+        self.evaluate_twilight_and_dark_zones()
+        self.flora.grow_cave_twilight_zone(self.owner, self.twilight_zone)
+        self.flora.grow_cave_dark_zone(self.owner, self.dark_zone)
+
+    def evaluate_entrance_zones(self):
+        if self.owner.dungeon_level == 1:
+            # this is top level of caves, means it should have entrance to surface and therefore have entrance zone
+            x, y = self.stairs.x, self.stairs.y
+            entrance_zone = {
+                'center': (x, y),
+                'coords': get_fov_coordinates_from_point(self.owner, x, y),
+            }
+            self.entrance_zones.append(entrance_zone)
+
+            # chance to contain another entrance which is a hole in the cave cellar
+            x, y = randint(0, self.owner.width), randint(0, self.owner.height)
+            if self.owner.is_empty(x, y):
+                entrance_zone = {
+                    'center': (x, y),
+                    'coords': get_fov_coordinates_from_point(self.owner, x, y),
+                }
+                self.entrance_zones.append(entrance_zone)
+
+    def light_entrance_zones(self):
+        for entrance_zone in self.entrance_zones:
+            for x, y in entrance_zone['coords']:
+                self.owner.tiles[x][y].light_up()
+
+    def evaluate_twilight_and_dark_zones(self):
+        entrance_zone_tiles = set()
+        for entrance_zone in self.entrance_zones:
+            entrance_zone_tiles |= entrance_zone['coords']
+
+        for y in range(self.owner.height):
+            for x in range(self.owner.width):
+                if self.owner.is_blocked(x, y):
+                    continue
+
+                if self.entrance_zones:
+                    if not (x, y) in entrance_zone_tiles:
+                        self.twilight_zone.add((x, y))
+                else:
+                    self.dark_zone.add((x, y))
+
     # returns (bg_color, char, char_color)
     def tile_render_info(self, x, y, visible):
         tile = self.owner.tiles[x][y]
@@ -166,22 +229,16 @@ class CaveMap(BiomMap):
         char = None
 
         if visible:
-            if 'blocked' in tile.regulatory_flags:
-                bg_color = tile.bg_color()
-            else:
-                bg_color = tile.bg_color()
-                if char_object:
-                    fg_color = char_object.color
-                    char = char_object.char
+            bg_color = tile.bg_color()
+            if char_object:
+                fg_color = char_object.color
+                char = char_object.char
 
             tile.regulatory_flags.add('explored')
         elif 'explored' in tile.regulatory_flags:
-            if 'blocked' in tile.regulatory_flags:
-                bg_color = tile.bg_color_distant()
-            else:
-                bg_color = tile.bg_color_distant()
-                if char_object:
-                    fg_color = char_object.distant_color
-                    char = char_object.char
+            bg_color = tile.bg_color_distant()
+            if char_object:
+                fg_color = char_object.distant_color
+                char = char_object.char
 
         return (bg_color, char, fg_color)

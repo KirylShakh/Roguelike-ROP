@@ -75,6 +75,11 @@ class GameMap:
     def is_void(self, x, y):
         return x < 0 or y < 0 or x >= self.width or y >= self.height
 
+    def is_empty(self, x, y):
+        return (not self.is_void(x, y) and
+                not self.is_blocked(x, y) and
+                not self.tiles[x][y].static_entities)
+
     def path_straight(self, src_x, src_y, dst_x, dst_y):
         return path_straight(src_x, src_y, dst_x, dst_y)
 

@@ -28,3 +28,13 @@ def initialize_fov(game_map):
 
 def recompute_fov(fov_map, x, y, fov_radius=fov_vars.radius):
     fov_map.compute_fov(x, y, fov_radius, fov_vars.light_walls, fov_vars.algorithm)
+
+def get_fov_coordinates_from_point(map_obj, x, y):
+    fov_map = initialize_fov(map_obj)
+    recompute_fov(fov_map, x, y)
+    result = set()
+    for j in range(map_obj.height):
+        for i in range(map_obj.width):
+            if fov_map.fov[i][j]:
+                result.add((i, j))
+    return result
