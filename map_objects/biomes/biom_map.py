@@ -38,6 +38,21 @@ class BiomMap(Component):
     def possible_encounters(self):
         return {}
 
+    def find_simple_empty_spot(self, direction=None):
+        if direction == None:
+            direction = choice(['left-top', 'right-top', 'right-bottom', 'left-bottom'])
+
+        x_range, y_range = {
+            'left-top': (range(self.owner.width), range(self.owner.height)),
+            'right-top': (range(self.owner.width - 1, -1, -1), range(self.owner.height)),
+            'right-bottom': (range(self.owner.width - 1, -1, -1), range(self.owner.height - 1, -1, -1)),
+            'left-bottom': (range(self.owner.width), range(self.owner.height - 1, -1, -1)),
+        }[direction]
+        for y in y_range:
+            for x in x_range:
+                if not self.owner.is_blocked(x, y):
+                    return (x, y)
+
     def find_empty_spot(self, rect, location='center'):
         if location == 'center':
             desired_x, desired_y = rect.center()

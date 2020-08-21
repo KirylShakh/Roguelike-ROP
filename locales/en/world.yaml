@@ -21,3 +21,5 @@ exploration:
 cave:
   passage:
     outside: Passage outside
+    upside: Passage upper from cavern
+    downside: Passage deeper into cavern

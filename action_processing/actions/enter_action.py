@@ -70,7 +70,5 @@ class EnterAction(Action):
                 if entity.stairs and entity.stairs.direction == StairsDirections.DOWN:
                     self.engine.entities = dungeon_map.next_floor(player, self.engine.message_log)
                     self.engine.regulatory_flags.add('change_location')
-                elif entity.stairs and entity.stairs.direction == StairsDirections.WORLD:
-                    return # implement - not sure what situations there could be to allow this yet
         else:
             self.engine.message_log.add_message(Message('There are no down stairs here', color_vars.warning))

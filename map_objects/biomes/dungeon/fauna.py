@@ -1,5 +1,5 @@
 import tcod
-from random import randint
+from random import randint, choice
 
 from map_objects.biomes.biom_fauna import BiomFauna
 from entity_objects.entity import Entity
@@ -11,6 +11,7 @@ from random_utils import random_choice_from_dict, from_dungeon_level, weight_fac
 
 # [max_number, dungeon_level]
 max_monsters_per_room_weights = [[2, 1], [3, 4], [5, 6]]
+max_monsters_per_level_weights = [[3, 1], [8, 3], [15, 6]]
 
 monsters = {
     'orc': {
@@ -64,6 +65,23 @@ class Fauna(BiomFauna):
             # Choose a random location in room
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
+            if not entities.find_by_point(x, y):
+                monster_choice = random_choice_from_dict(monster_chances)
+                monster = self.get_monster(x, y, monster_choice)
+                entities.append(monster)
+
+    def populate_cave(self, cave, entities):
+        max_monsters = from_dungeon_level(max_monsters_per_level_weights, cave.dungeon_level)
+        number_of_monsters = randint(0, max_monsters)
+        monster_chances = weight_factor(monsters, cave.dungeon_level)
+
+        if cave.map_creator.twilight_zone:
+            zone = cave.map_creator.twilight_zone
+        elif cave.map_creator.dark_zone:
+            zone = cave.map_creator.dark_zone
+
+        for _ in range(number_of_monsters):
+            x, y = choice(tuple(zone))
             if not entities.find_by_point(x, y):
                 monster_choice = random_choice_from_dict(monster_chances)
                 monster = self.get_monster(x, y, monster_choice)

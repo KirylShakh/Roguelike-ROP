@@ -31,6 +31,7 @@ class CaveMap(BiomMap):
     # map generation method: it will generate map, paint tiles, divide map into zones, place entities (flora, fauna, etc.)
     # map generation sequence: generate maze using Prim's algorithm, than remove dead ends and grow walls using cellular automata
     def make_map(self, entities, moving_down=True):
+        self.moving_down = moving_down
         self.generate_maze()
         self.clip_walls()
         self.grow_cave_walls()
@@ -41,11 +42,12 @@ class CaveMap(BiomMap):
         self.place_player(entities.player)
 
         self.split_into_zones()
+        self.fauna.populate_cave(self.owner, entities)
 
     def generate_maze(self):
         # random start point for a maze
-        x = randint(0, (self.owner.width - 1) // 2) * 2 + 1
-        y = randint(0, (self.owner.height - 1) // 2) * 2 + 1
+        x = randint(0, (self.owner.width - 1) // 2) * 2
+        y = randint(0, (self.owner.height - 1) // 2) * 2
         self.owner.tiles[x][y].unblock()
 
         # initial check tiles 2 spaces from start
@@ -148,24 +150,36 @@ class CaveMap(BiomMap):
                 else:
                     tile.set_bg_color(color_vars.dungeon_stone['floor'])
 
-
-    # find any empty tile, place player there
     def place_player(self, player):
-        player.x, player.y = self.stairs.x, self.stairs.y
+        if self.moving_down:
+            player.x, player.y = self.up_stairs.x, self.up_stairs.y
+        else:
+            player.x, player.y = self.down_stairs.x, self.down_stairs.y
 
     def place_stairs(self, entities):
+        if self.owner.dungeon_level == 1:
+            direction = StairsDirections.WORLD
+            name = locale.t('world.cave.passage.outside')
+        else:
+            direction = StairsDirections.UP
+            name = locale.t('world.cave.passage.upside')
         x, y = self.find_simple_empty_spot()
-        stairs_component = Stairs(self.owner.dungeon_level, direction=StairsDirections.WORLD)
-        self.stairs = Entity(x, y, char='<', color=color_vars.dungeon_stone['wall'],
-                                name=locale.t('world.cave.passage.outside'), render_order=RenderOrder.STAIRS,
+        stairs_component = Stairs(self.owner.dungeon_level, direction=direction)
+        self.up_stairs = Entity(x, y, char='<', color=color_vars.dungeon_stone['wall'],
+                                name=name, render_order=RenderOrder.STAIRS,
                                 stairs=stairs_component)
-        entities.append(self.stairs)
+        entities.append(self.up_stairs)
 
-    def find_simple_empty_spot(self):
-        for y in range(self.owner.height):
-            for x in range(self.owner.width):
-                if not self.owner.is_blocked(x, y):
-                    return (x, y)
+        x, y = self.find_simple_empty_spot()
+        stairs_component = Stairs(self.owner.dungeon_level + 1)
+        self.down_stairs = Entity(x, y, char='>', color=color_vars.dungeon_stone['wall'],
+                                name=locale.t('world.cave.passage.downside'), render_order=RenderOrder.STAIRS,
+                                stairs=stairs_component)
+        entities.append(self.down_stairs)
+
+        if self.up_stairs.x == self.down_stairs.x and self.up_stairs.y == self.down_stairs.y:
+            self.up_stairs.char.char = '&'
+            self.down_stairs.char.char = '&'
 
     def split_into_zones(self):
         self.entrance_zones = []
@@ -183,7 +197,7 @@ class CaveMap(BiomMap):
     def evaluate_entrance_zones(self):
         if self.owner.dungeon_level == 1:
             # this is top level of caves, means it should have entrance to surface and therefore have entrance zone
-            x, y = self.stairs.x, self.stairs.y
+            x, y = self.up_stairs.x, self.up_stairs.y
             entrance_zone = {
                 'center': (x, y),
                 'coords': get_fov_coordinates_from_point(self.owner, x, y),
@@ -214,7 +228,7 @@ class CaveMap(BiomMap):
                 if self.owner.is_blocked(x, y):
                     continue
 
-                if self.entrance_zones:
+                if self.entrance_zones or self.owner.dungeon_level == 2:
                     if not (x, y) in entrance_zone_tiles:
                         self.twilight_zone.add((x, y))
                 else:
