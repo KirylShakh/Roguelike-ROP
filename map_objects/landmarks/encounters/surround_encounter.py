@@ -6,7 +6,7 @@ from map_objects.landmarks.encounters.encounter import Encounter, EncounterChall
 
 class SurroundEncounter(Encounter):
     def __init__(self, name, challenge=EncounterChallenge.MEDIUM, message=None, entity_type='bandit'):
-        super().__init__(name, challenge=challenge, message=None)
+        super().__init__(name, challenge=challenge, message=message)
         self.entity_type = entity_type
 
     def init_constants(self):

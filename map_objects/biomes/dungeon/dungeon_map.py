@@ -12,6 +12,7 @@ from components.stairs import Stairs, StairsDirections
 from render_objects.render_order import RenderOrder
 from game_vars import color_vars
 from random_utils import random_choice_from_dict
+from locales import locale
 from map_objects.landmarks.encounters.surround_encounter import SurroundEncounter
 from map_objects.landmarks.encounters.camp_encounter import CampEncounter
 
@@ -42,11 +43,15 @@ class DungeonMap(BiomMap):
         })]
 
     def make_map(self, entities, moving_down=True):
-        if self.encounter and self.encounter.place_order == 'start':
-            self.encounter.create_on(self.owner, entities)
-
-        rooms = []
-        num_rooms = 0
+        if self.encounter:
+            self.encounter.setup_map_boundaries(0, self.owner.width - 1, 0, self.owner.height - 1)
+            self.encounter.make_rect()
+            rooms = [self.encounter.rect]
+            self.create_room(rooms[0])
+            num_rooms = 1
+        else:
+            rooms = []
+            num_rooms = 0
 
         for _ in range(self.max_rooms):
             # random width and height
@@ -63,26 +68,15 @@ class DungeonMap(BiomMap):
             else:
                 # this means there are no intersections, so this room is valid
                 self.create_room(new_room)
-                (new_x, new_y) = new_room.center()
+                new_x, new_y = new_room.center()
 
-                if num_rooms == 0:
-                    if not self.encounter:
-                        self.player_start = (new_x, new_y)
-                        self.place_player(entities.player)
+                if num_rooms == 0 or (self.encounter and num_rooms == 1):
+                    self.player_start = (new_x, new_y)
+                    self.place_player(entities.player)
                 else:
                     # all rooms after the first:
                     # connect it to the previous room with a tunnel
-                    (prev_x, prev_y) = rooms[num_rooms - 1].center()
-
-                    # flip a coin (random number that is either 0 or 1)
-                    if randint(0, 1) == 1:
-                        # first move horizontally, then vertically
-                        self.create_h_tunnel(prev_x, new_x, prev_y)
-                        self.create_v_tunnel(prev_y, new_y, new_x)
-                    else:
-                        # first move vertically, then horizontally
-                        self.create_v_tunnel(prev_y, new_y, prev_x)
-                        self.create_h_tunnel(prev_x, new_x, new_y)
+                    self.connect_room(new_room, rooms[num_rooms - 1])
 
                 self.fauna.populate_room(new_room, self.owner.dungeon_level, entities)
                 self.loot.fill_room(new_room, self.owner.dungeon_level, entities)
@@ -104,11 +98,12 @@ class DungeonMap(BiomMap):
             up_stairs_x = new_x
             up_stairs_y = new_y
 
-        stairs_component = Stairs(self.owner.dungeon_level + 1)
-        down_stairs = Entity(down_stairs_x, down_stairs_y, char='>', color=tcod.white,
-                                name='Stairs down', render_order=RenderOrder.STAIRS,
-                                stairs=stairs_component)
-        entities.append(down_stairs)
+        if not self.encounter:
+            stairs_component = Stairs(self.owner.dungeon_level + 1)
+            down_stairs = Entity(down_stairs_x, down_stairs_y, char='>', color=tcod.white,
+                                    name='Stairs down', render_order=RenderOrder.STAIRS,
+                                    stairs=stairs_component)
+            entities.append(down_stairs)
 
         if self.owner.dungeon_level == 1:
             direction = StairsDirections.WORLD
@@ -123,6 +118,10 @@ class DungeonMap(BiomMap):
                             stairs=up_stairs_component)
         entities.append(up_stairs)
 
+        if self.encounter:
+            self.connect_room(rooms[0], rooms[randint(1, len(rooms) - 1)])
+            self.encounter.create_on(self.owner, entities)
+
         for x in range(self.owner.width):
             for y in range(self.owner.height):
                 tile = self.owner.tiles[x][y]
@@ -131,14 +130,6 @@ class DungeonMap(BiomMap):
                 else:
                     tile.set_bg_color(self.material['floor'])
 
-        if self.encounter and self.encounter.place_order == 'end':
-            self.encounter.create_on(self.owner, entities)
-
-    # disable dungeon encounter until dungeon map will not be reworked
-    # also until way of setting place on map for encounters and player will be defined properly
-    def choose_encounter(self):
-        return False
-
     def possible_encounters(self):
         return {
             'bandit_ambush': {
@@ -146,12 +137,15 @@ class DungeonMap(BiomMap):
                 'weight_factor': 20,
                 'parameters': {
                     'entity_type': 'bandit',
+                    'message': locale.t('world.exploration.dungeon.encounter.bandit_ambush'),
                 },
             },
             'camp': {
                 'class': CampEncounter,
                 'weight_factor': 10,
-                'parameters': {},
+                'parameters': {
+                    'message': locale.t('world.exploration.dungeon.encounter.camp'),
+                },
             },
         }
 
@@ -162,6 +156,19 @@ class DungeonMap(BiomMap):
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
                 self.owner.tiles[x][y].unblock()
+
+    def connect_room(self, room, another_room):
+        prev_x, prev_y = room.center()
+        new_x, new_y = another_room.center()
+
+        if randint(0, 1) == 1:
+            # first move horizontally, then vertically
+            self.create_h_tunnel(prev_x, new_x, prev_y)
+            self.create_v_tunnel(prev_y, new_y, new_x)
+        else:
+            # first move vertically, then horizontally
+            self.create_v_tunnel(prev_y, new_y, prev_x)
+            self.create_h_tunnel(prev_x, new_x, new_y)
 
     def create_h_tunnel(self, x1, x2, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):

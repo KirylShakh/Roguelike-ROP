@@ -18,6 +18,10 @@ exploration:
       exists: 'You manage to notice some entrances to mysterious:'
       entry: '   {0}'
       not_exists: You do not see anything particularly distinguished among rubbish and rocks.
+    encounter:
+      bandit_ambush: You were ambushed by local bandits
+      animal_ambush: You are picked as a prey by a local predator pack
+      camp: You smell a campfire smoke crawling from nearby tunnels
 cave:
   passage:
     outside: Passage outside

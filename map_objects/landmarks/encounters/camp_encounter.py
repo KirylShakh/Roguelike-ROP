@@ -22,7 +22,7 @@ class CampEncounter(Encounter):
         if self.challenge == EncounterChallenge.EASY:
             min_number, max_number = 1, 1
         elif self.challenge == EncounterChallenge.MEDIUM:
-            min_number, max_number = 1, 2
+            min_number, max_number = 2, 3
         else: #HARD
             min_number, max_number = 3, 6
 
@@ -51,5 +51,4 @@ class CampEncounter(Encounter):
         game_map.map_creator.fauna.populate_by_type(points, 'camper', entities)
 
     def place_player(self, player, game_map):
-        map_rect = Rect(0, 0, game_map.width, game_map.height, calculate_borders=True)
-        player.x, player.y = game_map.map_creator.find_empty_spot(map_rect, location='side')
+        player.x, player.y = game_map.map_creator.find_simple_empty_spot()
